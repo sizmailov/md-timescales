@@ -1,0 +1,6 @@
+.directory
+*.csv
+.idea
+*.pyc
+.__pycache__
+*.ipynb
