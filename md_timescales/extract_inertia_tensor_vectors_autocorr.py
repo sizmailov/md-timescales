@@ -1,5 +1,3 @@
-import typing
-import pyxmolpp2
 from bionmr_utils.md import *
 from tqdm import tqdm
 import numpy as np
@@ -51,11 +49,10 @@ def extract_inertia_tensor_vectors_autocorr(path_to_trajectory: str, output_dire
 if __name__ == '__main__':
     # path_to_trajectory = "/home/sergei/UBI/case_wong_replica/1ubq_intolerant_shake_ewald_SPCE/"
     # output_directory = "data"
-    trajectory_length = 1000
     parser = argparse.ArgumentParser(description='Calculate_overall_tumbling')
     parser.add_argument('-i', '--path_to_trajectory', required=True, )
     parser.add_argument('-o', '--output_directory', default=os.getcwd())
-    parser.add_argument('-l', '--length_trajectory', default=1)
+    parser.add_argument('-l', '--length_trajectory', default=1, type=int)
     args = parser.parse_args()
     extract_inertia_tensor_vectors_autocorr(args.path_to_trajectory, args.output_directory, args.trajectory_length)
 
