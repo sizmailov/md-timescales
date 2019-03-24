@@ -1,12 +1,14 @@
 from typing import *
 from bionmr_utils.md import  *
+import argparse
+import pyxmolpp2
 from tqdm import tqdm
 import numpy as np
 import os
 import pandas as pd
 
 
-def extract_NH_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice]) -> dict:
+def get_autocorr_NH(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice]) -> dict:
     """
     :param trajectory
     """
@@ -30,7 +32,7 @@ def extract_NH_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.Traje
     return autocorr
 
 
-def extract_NH_autocorr(path_to_trajectory: str, trajectory_length=1: int, output_directory: str) -> None:
+def extract_NH_autocorr(path_to_trajectory: str, output_directory: str, trajectory_length: int=1) -> None:
 
     traj, ref  = traj_from_dir(path_to_trajectory, first=1, last=trajectory_length)
     """
@@ -40,17 +42,23 @@ def extract_NH_autocorr(path_to_trajectory: str, trajectory_length=1: int, outpu
     """
     autocorr_NH = get_autocorr_NH(traj)
     os.makedirs(output_directory, exist_ok=True)
-    chain = ref.asChains[0]
-    for rid, acorr in acorrs.items():
+    for rid, acorr in autocorr_NH.items():
         res_serial = rid.serial
         outname = "%02d.csv"%(res_serial,)
         pd.DataFrame(np.array([ np.linspace(0,len(acorr)*0.002, len(acorr), endpoint=False), acorr]).T, 
-                    columns=["time_ns", "acorr"]).to_csv(os.path.join(outdir, outname), index=False)
+                    columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, outname), index=False)
 
     
 if __name__ == '__main__':
-    path_to_trajectory = "/home/olebedenko/bioinf/1ubq/1ubq/"
-    output_directory = "/home/olebedenko/bioinf/handling/h4/tip3p/NPT_gamma_ln_2/autocorr/NH/data"
+
+    #path_to_trajectory = "/home/olebedenko/bioinf/1ubq/1ubq/"
+    #output_directory = "/home/olebedenko/bioinf/handling/h4/tip3p/NPT_gamma_ln_2/autocorr/NH/data"
     trajectory_length = 2000
-    extract_NH_autocorr(path_to_trajectory, trajectory_length, output_directory)
+    parser = argparse.ArgumentParser(description='Calc NH autocorr')
+    parser.add_argument('-i', '--path_to_trajectory', required=True,)
+    parser.add_argument('-o', '--output_directory',default=os.getcwd())
+    parser.add_argument('-l', '--length_trajectory', default=1)
+    args = parser.parse_args()
+    extract_NH_autocorr(args.path_to_trajectory, args.output_directory, args.length_trajectory)
+
 
