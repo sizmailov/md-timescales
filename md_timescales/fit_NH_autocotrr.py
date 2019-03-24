@@ -55,34 +55,14 @@ def fit_auto_correlation(time: List[float], acorr: List[float], order: int, with
 def save_fit_auto_correlation(path_to_ref: str, path_to_csv_accor: str, output_directory: str):
     traj, ref  = traj_from_dir(path_to_ref, first=1, last=1)
     chain = ref.asChains[0] 
-    NH_tau_table = pd.DataFrame()
     csv_files = sorted(glob.glob(os.path.join(path_to_csv_accor, "*.csv")))
-    # columns = {4: {'rName': chain[int(rId)].name.str,
-    #               'aName': chain[int(rId)].asAtoms[0].aName.str,
-    #               'rId': int(rId),
-    #               'exp3-a1': popt[0], 'exp3-tau1': popt[1],
-    #               'exp3-a2': popt[2], 'exp3-tau2' : popt[3],
-    #               'exp3-a3' : popt[4], 'exp3-tau3' : popt[5],
-    #               'exp4-a4' : popt[6], 'exp4-tau4' : popt[7]}
-    #            3: {'rName': chain[int(rId)].name.str,
-    #               'aName': chain[int(rId)].asAtoms[0].aName.str,
-    #               'rId': int(rId),
-    #               'exp3-a1': popt[0], 'exp3-tau1': popt[1],
-    #               'exp3-a2': popt[2], 'exp3-tau2' : popt[3],
-    #               'exp3-a3' : popt[4], 'exp3-tau3' : popt[5]},
-    #            2: {'rName': chain[int(rId)].name.str,
-    #               'aName': chain[int(rId)].asAtoms[0].aName.str,
-    #               'rId': int(rId),
-    #               'exp3-a1': popt[0], 'exp3-tau1': popt[1],
-    #               'exp3-a2': popt[2], 'exp3-tau2' : popt[3]}}
-
     curve_bounds = {
-        2: (-np.inf, np.inf),
-        3: (-np.inf, np.inf),
-        4: (-np.inf, np.inf),
+        2: ([[0, 0.1, 0, 1], [1, 1, 1, 10]]),
+        3: ([[0, 0.01, 0, 0.1, 0, 1], [1, 0.1, 1, 1, 1, 10]]),
+        4: ([[0, 0.001, 0, 0.01, 0, 1, 0, 10], [1, 0.01, 1, 0.1, 1, 10, 1, 100]]),
     }
-    chain = ref.asChains[0]
     for order in range(2, 5):
+        NH_tau_table = pd.DataFrame()
         for file in csv_files:
             name = os.path.splitext(os.path.basename(file))[0]
             rId = ResidueId(int(name))
@@ -111,10 +91,10 @@ def save_fit_auto_correlation(path_to_ref: str, path_to_csv_accor: str, output_d
         NH_tau_table = NH_tau_table.sort_values(by=['rId'])
         NH_tau_table.to_csv(os.path.join(output_directory, 'tau_NH_%d_exp.csv' % order), index=False)
 
+
 if __name__ == '__main__':
 
-  #-ref "/home/olebedenko/bioinf/1ubq/1ubq/" -accor "/home/olebedenko/bioinf/scripts/md-timescales/md_timescales/"
-
+  #-ref  "/home/olebedenko/bioinf/trj/h4/tip4p-ew/NPT_gamma_ln_2/" -accor "/home/olebedenko/bioinf/handling/h4/tip4p-ew/NPT_gamma_ln_2/autocorr/NH/data"
   parser = argparse.ArgumentParser(description='fit NH autocorr')
   parser.add_argument('-ref', '--path_to_ref', required=True,)
   parser.add_argument('-accor', '--path_to_csv_accor', required=True)
