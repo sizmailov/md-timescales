@@ -1,4 +1,5 @@
 from typing import List
+import argparse
 import numpy as np
 from bionmr_utils.md import *
 import os
@@ -51,7 +52,9 @@ def fit_auto_correlation(time: List[float], acorr: List[float], order: int, with
     return popt
 
 
-def save_fit_auto_correlation(ref: Frame, path_to_csv_accor: str, output_directory: str):
+def save_fit_auto_correlation(path_to_ref: str, path_to_csv_accor: str, output_directory: str):
+    traj, ref  = traj_from_dir(path_to_ref, first=1, last=1)
+    chain = ref.asChains[0] 
     NH_tau_table = pd.DataFrame()
     csv_files = sorted(glob.glob(os.path.join(path_to_csv_accor, "*.csv")))
     # columns = {4: {'rName': chain[int(rId)].name.str,
@@ -74,16 +77,16 @@ def save_fit_auto_correlation(ref: Frame, path_to_csv_accor: str, output_directo
     #               'exp3-a2': popt[2], 'exp3-tau2' : popt[3]}}
 
     curve_bounds = {
-        2: (-np.inf, np.inf),  # TODO: set actual curve bounds
+        2: (-np.inf, np.inf),
         3: (-np.inf, np.inf),
         4: (-np.inf, np.inf),
     }
     chain = ref.asChains[0]
     for order in range(2, 5):
-        name = os.path.splitext(os.path.basename(file))[0]
-        rId = ResidueId(name)
-        df = pd.read_csv(file)
         for file in csv_files:
+            name = os.path.splitext(os.path.basename(file))[0]
+            rId = ResidueId(int(name))
+            df = pd.read_csv(file)
             popt = fit_auto_correlation(df.time_ns,
                                         df.acorr, order,
                                         with_constant=False,
@@ -95,15 +98,26 @@ def save_fit_auto_correlation(ref: Frame, path_to_csv_accor: str, output_directo
                 'rName': chain[rId].name.str, 'aName': chain[rId].asAtoms[0].aName.str, 'rId': rId.serial
             }
             D.update(
-                {"exp-%d-a%d" % (order, a) for a in amplitudes}
+                {("exp-%d-a%d" % (order, i + 1)): a for i, a in enumerate(amplitudes)}
             )
             D.update(
-                {"tau-%d-tau%d" % (order, tau) for tau in taus}
+                {("exp-%d-tau%d" % (order, i + 1)): tau for i, tau in enumerate(taus)}
             )
 
-            temp = pd.DataFrame(D)
+            temp = pd.DataFrame(D, index=[0])
 
             NH_tau_table = pd.concat([NH_tau_table, temp] )
 
         NH_tau_table = NH_tau_table.sort_values(by=['rId'])
         NH_tau_table.to_csv(os.path.join(output_directory, 'tau_NH_%d_exp.csv' % order), index=False)
+
+if __name__ == '__main__':
+
+  #-ref "/home/olebedenko/bioinf/1ubq/1ubq/" -accor "/home/olebedenko/bioinf/scripts/md-timescales/md_timescales/"
+
+  parser = argparse.ArgumentParser(description='fit NH autocorr')
+  parser.add_argument('-ref', '--path_to_ref', required=True,)
+  parser.add_argument('-accor', '--path_to_csv_accor', required=True)
+  parser.add_argument('-o', '--output_directory', default=os.getcwd())
+  args = parser.parse_args()
+  save_fit_auto_correlation(args.path_to_ref, args.path_to_csv_accor, args.output_directory)
