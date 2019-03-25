@@ -71,24 +71,6 @@ def plot_acorr_fit(path_to_fit_csv, path_to_accor_csv, path_to_output_pdf):
             plt.close()
         pdf.close()
 
-"""
-test = "/home/olebedenko/bioinf/scripts/md-timescales/md_timescales/tau_NH_2_exp.csv"
-fit = pd.read_csv(test)
-line = fit.iloc[23]
-a = ["exp-%d-a%d" %  (2, i + 1) for i in range(2)]
-t = ["exp-%d-tau%d" %  (2, i + 1) for i in range(2)]
-amp = {"a%d" % (i+1): line[a[i]] for i in range(2)}
-tau = {"tau%d" % (i+1): line[t[i]] for i in range(2)}
-amp.update(tau)
-
-def r(a1, tau1, a2, tau2):
-    print(a1,tau1,a2,tau2)
-r(**amp)
-print(line)
-
-path_to_csv_accor = "/home/olebedenko/bioinf/handling/h4/tip4p-ew/NPT_gamma_ln_2/autocorr/NH/data"
-csv_files = sorted(glob.glob(os.path.join(path_to_csv_accor, "*.csv")))
-"""
 if __name__ == "__main__":
     #-f_csv "/home/olebedenko/bioinf/handling/h4/tip4p-ew/NPT_gamma_ln_2/autocorr/NH/graph" -a_csv "/home/olebedenko/bioinf/handling/h4/tip4p-ew/NPT_gamma_ln_2/autocorr/NH/data"
     parser = argparse.ArgumentParser(description="plot NH autocorrelation")
