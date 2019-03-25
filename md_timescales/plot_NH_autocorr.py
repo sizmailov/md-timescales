@@ -83,6 +83,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="plot NH autocorrelation")
     parser.add_argument('-f_csv', '--path_to_fit_csv', required=True)
     parser.add_argument('-a_csv', '--path_to_accor_csv', required=True)
-    parser.add_argument('-o', '--path_to_output_pdf', default=os.getcwd())
+    parser.add_argument('-o', '--output_directory', default=os.getcwd())
     args = parser.parse_args()
-    plot_acorr_fit(args.path_to_fit_csv, args.path_to_accor_csv, args.path_to_output_pdf)
+    plot_acorr_fit(args.path_to_fit_csv, args.path_to_accor_csv, args.output_directory)
