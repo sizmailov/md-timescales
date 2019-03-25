@@ -7,14 +7,10 @@ import numpy as np
 import glob
 import os
 from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.offsetbox import AnchoredText
-
-
 
 
 def two_exp(x, a1, tau1, a2, tau2):
     return a1 * np.exp(-x / tau1) + a2 * np.exp(-x / tau2)
-
 
 
 def three_exp(x, a1, tau1, a2, tau2, a3, tau3):
@@ -48,25 +44,37 @@ def plot_acorr_fit(path_to_fit_csv, path_to_accor_csv, path_to_output_pdf):
             popt = {"a%d" % (i+1): fit_line[amplitude_label[i]] for i in range(order)}
             tau = {"tau%d" % (i+1): fit_line[tau_label[i]] for i in range(order)}
             popt.update(tau)
-            plt.figure()
-            fig, ax = plt.subplots()
 
-            ax.text(1, 3, 'boxed italics text in data coords', style='italic',
-                 bbox={'facecolor': 'red', 'alpha': 0.5, 'pad': 10})
+            coeff_a = ["a%d" % (i+1) for i in range(order)]
+            coeff_tau = ["tau%d" % (i+1) for i in range(order)]
+            union_a_tau = list(zip(coeff_a,
+                           [" = " + str(round(popt[label],2)) + " " for label in coeff_a],
+                           coeff_tau,
+                           [" = " + str(round(popt[label],2)) + " ns\n" for label in coeff_tau]))
+            graph_label = "".join(["".join(elem) for elem in union_a_tau])
+            left, width = .40, .54
+            bottom, height = .40, .54
+            right = left + width
+            top = bottom + height
 
-            fig.tight_layout()
-            plt.ylim(-0.3, 1.5)
-            plt.xlim(0, 20)
-            plt.xlabel('time, ns', fontsize = 13)
-            plt.ylabel('autocorrelation', fontsize = 13)
-            plt.title('NH autocorrelation plot %s exp %s%s'%(str(order), fit_line["rId"], fit_line["rName"]))
-            plt.plot( df.time_ns, df.acorr, linestyle=':')
-            plt.plot(df.time_ns, fit_func[order](df.time_ns, **popt))
-            #plt.axvline(x=df.time_ns[limit], color='g', linestyle='--', label="fit limit %s"%(limit))
-            plt.grid(True)
-            #popt = [round(elem,2) for elem in popt]
-            # plt.legend(("NH autocorrelation", "fit {0}*exp-(-t/{1}) + {2}*exp-(-t/{3}) + \n +{4}*exp-(-t/{5}) + {6}*exp-(-t/{7})".format(*popt)
-            #             , "fit limit = %s ns"%(df.time_ns[limit])), loc='upper right')
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.text(right, top, graph_label,
+                horizontalalignment='right',
+                verticalalignment='top',
+                transform=ax.transAxes,
+                multialignment='left',
+                bbox={'facecolor': 'moccasin', 'alpha': 0.5, 'pad': 6})
+            ax.set_ylim(-0.1,1.1)
+            ax.set_xlim(-1, 20)
+            ax.set_xlabel('time, ns', fontsize = 13)
+            ax.set_ylabel('autocorrelation', fontsize = 13)
+            ax.set_title('NH autocorrelation plot %s exp %s%s'%(str(order), fit_line["rId"], fit_line["rName"]))
+            ax.plot( df.time_ns, df.acorr)
+            ax.plot(df.time_ns, fit_func[order](df.time_ns, **popt))
+            #ax.set_axvline(x=df.time_ns[limit], color='g', linestyle='--', label="fit limit %s"%(limit))
+            ax.grid(True)
+            # ax.set_legend(("NH autocorrelation", "fit , loc='upper right')
             pdf.savefig()
             plt.close()
         pdf.close()
