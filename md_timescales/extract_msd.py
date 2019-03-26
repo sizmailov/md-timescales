@@ -16,13 +16,12 @@ def get_msd(array):
     return msd
 
 
-def extract_mass_center_without_shift(path_to_trajectory: str, output_directory: str, trajectory_length: int=1):
-    atomics_weight = {'H': 1.008, 'C': 12.011, 'N': 14.007, 'O': 15.999, 'P': 30.973762, 'S': 32.06}
+def extract_mass_center_without_shift(path_to_trajectory: str, trajectory_length: int=1):
     """
-
     :param path_to_trajectory:
-    :param output_directory: name of output four-column .csv file [time_ns,x,y,z]
+    :param trajectory_length: by default equal 1
     """
+    atomics_weight = {'H': 1.008, 'C': 12.011, 'N': 14.007, 'O': 15.999, 'P': 30.973762, 'S': 32.06}
     traj, ref = traj_from_dir(path_to_trajectory, first=1, last=trajectory_length)
     masses = [atomics_weight[atom.name.str[0]] for atom in ref.asAtoms]
     center_all_without_shift = []
@@ -34,8 +33,8 @@ def extract_mass_center_without_shift(path_to_trajectory: str, output_directory:
 
 
 def extract_mass_center_with_shift(path_to_trajectory: str, output_directory: str, volume=None):
-    latice_path = os.path.join(path_to_trajectory,"1_build", "box.inpcrd")
-    with open(latice_path, "r") as in_file:
+    lattice_path = os.path.join(path_to_trajectory,"1_build", "box.inpcrd")
+    with open(lattice_path, "r") as in_file:
         last_line = in_file.readlines()[-1].split()
         vectors = [float(coordinate) for coordinate in last_line[0:3]]
         angles = [Degrees(float(coordinate)) for coordinate in last_line[3:]]
@@ -43,7 +42,7 @@ def extract_mass_center_with_shift(path_to_trajectory: str, output_directory: st
     latice = LatticeVectors(vectors[0], vectors[1], vectors[2],
                             angles[0], angles[1], angles[2])
     if volume:
-        volume_0 = np.dot(np.cross(latice[0].to_np, latice[1].to_np, axisc=0), latice[2].to_np)
+        volume_0 = (latice[0].cross(latice[1]), axisc=0).dot(latice[2])
         factor_scale = (float(volume[0]) / float(volume_0)) ** (1 / 3)
         latice.scale_by(factor_scale)
     else:
@@ -51,9 +50,9 @@ def extract_mass_center_with_shift(path_to_trajectory: str, output_directory: st
     center_all_with_shift = pd.DataFrame()
     center_all_without_shift = extract_mass_center_without_shift(path_to_trajectory, output_directory)
     prev_center = None
-    for center in center_all_without_shift:
+    for ind, center in enumerate(center_all_without_shift):
         if prev_center is None:
-            prev_center = center_all_without_shift[0]
+            prev_center = center_all_without_shift[ind]
         else:
             if volume:
                 factor_scale = (float(volume[ind]) / float(volume[ind - 1])) ** (1 / 3)
@@ -90,7 +89,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Calc NH autocorr')
     parser.add_argument('-i', '--path_to_trajectory', required=True, )
     parser.add_argument('-o', '--output_directory', default=os.getcwd())
-    parser.add_argument('-v', '--volume', default=None, type=int)
+    parser.add_argument('-v', '--volume', default=False, bool=int)
     args = parser.parse_args()
     extract_msd(args.path_to_trajectory, args.output_directory, args.volume)
    
