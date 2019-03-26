@@ -47,11 +47,14 @@ def plot_acorr_fit(path_to_fit_csv, path_to_accor_csv, path_to_output_pdf):
 
                 coeff_a = ["a%d" % (i+1) for i in range(order)]
                 coeff_tau = ["tau%d" % (i+1) for i in range(order)]
-                union_a_tau = list(zip(coeff_a,
-                               [" = " + str(round(popt[label],2)) + " " for label in coeff_a],
-                               coeff_tau,
-                               [" = " + str(round(popt[label],2)) + " ns\n" for label in coeff_tau]))
-                graph_label = "".join(["".join(elem) for elem in union_a_tau])
+                union_a_tau = [ "{a_label:2s} = {a_value:5.3f} ; {tau_label:3s} = {tau_value:8.3e}".format(
+                       a_label=a_label, 
+                       a_value=popt[a_label],
+                       tau_label=tau_label, 
+                       tau_value=popt[tau_label]) 
+                   for a_label, tau_label in zip(coeff_a, coeff_tau)
+                ]
+                graph_label = "\n".join(union_a_tau)
                 left, width = .40, .54
                 bottom, height = .40, .54
                 right = left + width
@@ -69,7 +72,7 @@ def plot_acorr_fit(path_to_fit_csv, path_to_accor_csv, path_to_output_pdf):
                 ax.set_xlim(-1, 20)
                 ax.set_xlabel('time, ns', fontsize = 13)
                 ax.set_ylabel('autocorrelation', fontsize = 13)
-                ax.set_title('NH autocorrelation plot %s exp %s%s'%(str(order), fit_line["rId"], fit_line["rName"]))
+                ax.set_title('NH autocorrelation plot %d exp %s%s'%(order, fit_line["rId"], fit_line["rName"]))
                 ax.plot( df.time_ns, df.acorr)
                 ax.plot(df.time_ns, fit_func[order](df.time_ns, **popt))
                 #ax.set_axvline(x=df.time_ns[limit], color='g', linestyle='--', label="fit limit %s"%(limit))
