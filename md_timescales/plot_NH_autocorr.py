@@ -45,6 +45,7 @@ def plot_acorr_fit(path_to_fit_csv, path_to_csv_accor, path_to_output_pdf):
                 tau = {"tau%d" % (i+1): fit_line[tau_label[i]] for i in range(order)}
                 popt.update(tau)
 
+                limit = fit_line["limit"]
                 coeff_a = ["a%d" % (i+1) for i in range(order)]
                 coeff_tau = ["tau%d" % (i+1) for i in range(order)]
                 union_a_tau = [ "{a_label:2s} = {a_value:5.3f} ; {tau_label:3s} = {tau_value:8.3e}".format(
@@ -75,14 +76,15 @@ def plot_acorr_fit(path_to_fit_csv, path_to_csv_accor, path_to_output_pdf):
                 ax.set_title('NH autocorrelation plot %d exp %s%s'%(order, fit_line["rId"], fit_line["rName"]))
                 ax.plot( df.time_ns, df.acorr)
                 ax.plot(df.time_ns, fit_func[order](df.time_ns, **popt))
-                #ax.set_axvline(x=df.time_ns[limit], color='g', linestyle='--', label="fit limit %s"%(limit))
+                ax.axvline(x=df.time_ns[limit], color='g', linestyle='--', label="fit limit %s"%(limit))
                 ax.grid(True)
                 # ax.set_legend(("NH autocorrelation", "fit , loc='upper right')
+                plt.savefig("test.png")
                 pdf.savefig()
                 plt.close()
 
 if __name__ == "__main__":
-    #-f_csv "/home/olebedenko/bioinf/handling/h4/tip4p-ew/NPT_gamma_ln_2/autocorr/NH/graph" -a_csv "/home/olebedenko/bioinf/handling/h4/tip4p-ew/NPT_gamma_ln_2/autocorr/NH/data"
+    #-f_csv "/home/olebedenko/bioinf/scripts/md-timescales/md_timescales" -a_csv "/home/olebedenko/bioinf/handling/h4/tip4p-ew/NPT_gamma_ln_2/autocorr/NH/data"
     parser = argparse.ArgumentParser(description="plot NH autocorrelation")
     parser.add_argument('-f_csv', '--path_to_fit_csv', required=True)
     parser.add_argument('-a_csv', '--path_to_csv_accor', required=True)
