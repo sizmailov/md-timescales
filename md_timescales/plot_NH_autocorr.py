@@ -88,4 +88,4 @@ if __name__ == "__main__":
     parser.add_argument('-a_csv', '--path_to_csv_accor', required=True)
     parser.add_argument('-o', '--output_directory', default=os.getcwd())
     args = parser.parse_args()
-    plot_acorr_fit(args.path_to_fit_csv, args.path_to_csv_accor, args.output_directory)Z
+    plot_acorr_fit(args.path_to_fit_csv, args.path_to_csv_accor, args.output_directory)
