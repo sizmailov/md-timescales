@@ -6,7 +6,7 @@ graph/tau_NH_2_exp.pdf graph/tau_NH_4_exp.pdf: ${SCRIPT_DIR}plot_NH_autocorr.py 
 	python3 $< \
 		--path_to_fit_csv=graph \
 		--path_to_csv_acorr=data \
-		-output_directory=graph 
+		--output_directory=graph \
 
 
 
