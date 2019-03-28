@@ -49,7 +49,7 @@ def fit_auto_correlation(time: List[float], acorr: List[float], order: int, with
     limit = fit_limit(acorr)
     popt, pcov = curve_fit(fit_func[order], time[:limit], acorr[:limit],
                            bounds=curve_bounds)
-    return popt
+    return limit, popt
 
 
 def save_fit_auto_correlation(path_to_ref: str, path_to_csv_accor: str, output_directory: str):
@@ -67,7 +67,7 @@ def save_fit_auto_correlation(path_to_ref: str, path_to_csv_accor: str, output_d
             name = os.path.splitext(os.path.basename(file))[0]
             rId = ResidueId(int(name))
             df = pd.read_csv(file)
-            popt = fit_auto_correlation(df.time_ns,
+            limit, popt = fit_auto_correlation(df.time_ns,
                                         df.acorr, order,
                                         with_constant=False,
                                         curve_bounds=curve_bounds[order])
@@ -75,7 +75,7 @@ def save_fit_auto_correlation(path_to_ref: str, path_to_csv_accor: str, output_d
             taus = popt[1::2]
 
             D = {
-                'rName': chain[rId].name.str, 'aName': chain[rId].asAtoms[0].aName.str, 'rId': rId.serial
+                'rName': chain[rId].name.str, 'aName': chain[rId].asAtoms[0].aName.str, 'rId': rId.serial, 'limit': limit
             }
             D.update(
                 {("exp-%d-a%d" % (order, i + 1)): a for i, a in enumerate(amplitudes)}
