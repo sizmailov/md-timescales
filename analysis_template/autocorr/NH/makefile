@@ -1,7 +1,7 @@
 include common.mk
 
 
-graph/tau_NH_2_exp.pdf graph/tau_NH_4_exp.pdf: ${SCRIPT_DIR}plot_NH_autocotrr.py graph/tau_NH_2_exp.csv ${SCRIPT_DIR}plot_NH_autocotrr.py graph/tau_NH_4_exp.csv
+graph/tau_NH_2_exp.pdf graph/tau_NH_4_exp.pdf: ${SCRIPT_DIR}plot_NH_autocorr.py graph/tau_NH_2_exp.csv ${SCRIPT_DIR}plot_NH_autocorr.py  graph/tau_NH_4_exp.csv
 	mkdir -p graph
 	python3 $< \
 		--path_to_fit_csv=graph \

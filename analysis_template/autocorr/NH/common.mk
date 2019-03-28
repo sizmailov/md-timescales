@@ -1,4 +1,4 @@
-SCRIPT_DIR=/home/olebedenko/bioinf/md-timescales/md_timescales/
+SCRIPT_DIR=/home/olebedenko/bioinf/scripts/md-timescales/md_timescales/
 N_RESIDUES=76
 TRAJECTORY_LENGTH=1000
 TRAJECTORY_PATH=/home/olebedenko/bioinf/trj/ubq/spce/NVE/
