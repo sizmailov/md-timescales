@@ -1,6 +1,6 @@
 SCRIPT_DIR=/home/legosta/bioinf/scripts/md-timescales/md_timescales/
 N_RESIDUES=76
-TRAJECTORY_LENGTH=10
+TRAJECTORY_LENGTH=1000
 TRAJECTORY_PATH=/home/legosta/bioinf/trj/ubq/spce/NVE/
 
 .PHONY: all clean 
