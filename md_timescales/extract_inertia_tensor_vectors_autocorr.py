@@ -41,10 +41,14 @@ def extract_inertia_tensor_vectors_autocorr(path_to_trajectory: str, output_dire
     autocorr1 = calc_autocorr_order_2(vectors1)
     autocorr2 = calc_autocorr_order_2(vectors2)
     autocorr3 = calc_autocorr_order_2(vectors3)
+    T = np.linspace(0,len(autocorr1)*0.002, len(autocorr1))
 
     pd.DataFrame(autocorr1, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling_1.csv"), index = False)
     pd.DataFrame(autocorr2, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling_2.csv"), index = False)
     pd.DataFrame(autocorr3, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling_3.csv"), index = False)
+    pd.DataFrame(np.array([T, autocorr1]).T, columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, "overall_tumbling_1.csv"), index = False)
+    pd.DataFrame(np.array([T, autocorr2]).T, columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, "overall_tumbling_2.csv"), index = False)
+    pd.DataFrame(np.array([T, autocorr3]).T, columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, "overall_tumbling_3.csv"), index = False)
 
 if __name__ == '__main__':
     # path_to_trajectory = "/home/sergei/UBI/case_wong_replica/1ubq_intolerant_shake_ewald_SPCE/"
