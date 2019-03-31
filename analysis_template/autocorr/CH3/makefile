@@ -9,7 +9,7 @@ figures/tau_CH3_2_exp.pdf figures/tau_CH3_4_exp.pdf: ${SCRIPT_DIR}/plot_CH3_auto
 
 
 
-data/fit/tau_CH3_2_exp.csv data/fit/tau_CH3_4_exp.csv: ${SCRIPT_DIR}/fit_CH3_autocorr.py data/acorr/${FIRST_CH3_RESIDUES}.csv data/acorr/${LAST_CH3_RESIDUES}.csv
+data/fit/tau_CH3_2_exp.csv data/fit/tau_CH3_4_exp.csv: ${SCRIPT_DIR}/fit.py data/acorr/${FIRST_CH3_RESIDUES}.csv data/acorr/${LAST_CH3_RESIDUES}.csv
 	mkdir -p data/fit/
 	python3 "$<" \
 		--output_directory=data/fit/ \
