@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
 import numpy as np
 from bionmr_utils.md import *
 import os
@@ -20,34 +20,42 @@ def fit_limit(data):
     return index
 
 
-def two_exp(x, a1, tau1, a2, tau2):
-    return a1 * np.exp(-x / tau1) + a2 * np.exp(-x / tau2)
+def __multi_exp_f(x, A, TAU, C):
+    return np.sum(
+        (a * np.exp(-x / tau)) for a, tau in zip(A, TAU)
+    ) + C
 
 
-def three_exp(x, a1, tau1, a2, tau2, a3, tau3):
-    return a1 * np.exp(-x / tau1) + a2 * np.exp(-x / tau2) + a3 * np.exp(-x / tau3)
+def multi_exp(x, *args):
+    TAU = args[1::2]
+
+    if len(args) % 2 == 0:
+        C = 0
+        A = args[::2]
+    else:
+        C = args[-1]
+        A = args[:-1:2]
+
+    return __multi_exp_f(x, A, TAU, C)
 
 
-def four_exp(x, a1, tau1, a2, tau2, a3, tau3, a4, tau4):
-    return a1 * np.exp(-x / tau1) + a2 * np.exp(-x / tau2) + a3 * np.exp(-x / tau3) + a4 * np.exp(-x / tau4)
-
-def fit_auto_correlation(time: List[float], acorr: List[float], order: int, with_constant: bool,
-                         curve_bounds) -> Tuple[float,List[float]]:
+def fit_auto_correlation(time: List[float], acorr: List[float], bounds) -> Tuple[int, List[float]]:
     """
     Fit input data with :math:`\sum_n A_n \exp(-t/\\tau_n) + const`
 
     :param time: time data series
     :param acorr: auto-correlation data series
-    :param order: number of exponentials in fit
-    :param with_constant: if false const = 0
-    :param curve_bounds: curve bounds parametrs
+    :param bounds: curve parameters bounds
     :return: Fit curve parameters
     """
 
-    fit_func = {2: two_exp, 3: three_exp, 4: four_exp}
     limit = fit_limit(acorr)
-    popt, pcov = curve_fit(fit_func[order], time[:limit], acorr[:limit],
-                           bounds=curve_bounds)
+    p0 = np.mean(bounds, axis=0)
+    popt, pcov = curve_fit(multi_exp,
+                           time[:limit],
+                           acorr[:limit],
+                           p0=p0,
+                           bounds=bounds)
     return limit, popt
 
 
@@ -61,38 +69,41 @@ def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[fl
     """
     ...
 
-def save_fit_auto_correlation(path_to_ref: str, path_to_csv_accor: str, output_directory: str):
-    traj, ref  = traj_from_dir(path_to_ref, first=1, last=1)
-    chain = ref.asChains[0] 
-    csv_files = sorted(glob.glob(os.path.join(path_to_csv_accor, "*.csv")))
-    curve_bounds = {
-        2: ([[0, 0.1, 0, 1], [1, 1, 1, 10]]),
-        3: ([[0, 0.01, 0, 0.1, 0, 1], [1, 0.1, 1, 1, 1, 10]]),
-        4: ([[0, 0.001, 0, 0.01, 0, 1, 0, 10], [1, 0.01, 1, 0.1, 1, 10, 1, 100]]),
-    }
-    for order in range(2, 5):
+
+def save_fit_auto_correlation(path_to_ref: str,
+                              path_to_csv_acorr: str,
+                              output_directory: str,
+                              curve_bounds: List[List[List[Union[float, int]]]]):
+    traj, ref = traj_from_dir(path_to_ref, first=1, last=1)
+
+    chain = ref.asChains[0]
+    csv_files = sorted(glob.glob(os.path.join(path_to_csv_acorr, "*.csv")))
+
+    for bounds in curve_bounds:
+        with_constant = len(bounds[0]) % 2 == 1
+        order = len(bounds[0]) // 2
         tau_table = pd.DataFrame()
         for file in csv_files:
             name = os.path.splitext(os.path.basename(file))[0]
-            rId = ResidueId(int(name.split("_")[0]))
-            if "_" in name:
-                aName = name.split("_")[1]
-                fit_group = 'CH3'
-            else:
-                aName = chain[rId].asAtoms[0].aName.str
-                fit_group = 'NH'
+            rid, aname = name.split("_")
+            rid = ResidueId(int(rid))
 
             df = pd.read_csv(file)
             limit, popt = fit_auto_correlation(df.time_ns,
-                                        df.acorr, order,
-                                        with_constant=False,
-                                        curve_bounds=curve_bounds[order])
+                                               df.acorr,
+                                               bounds=bounds)
+
+            D = {
+                'rName': chain[rid].name.str, 'aName': aname, 'rId': rid.serial, 'limit': limit
+            }
+
+            if with_constant:
+                D.update({"constant": popt[-1]})
+                popt = popt[:-1]
+
             amplitudes = popt[::2]
             taus = popt[1::2]
 
-            D = {
-                'rName': chain[rId].name.str, 'aName': aName, 'rId': rId.serial, 'limit':limit
-            }
             D.update(
                 {("exp-%d-a%d" % (order, i + 1)): a for i, a in enumerate(amplitudes)}
             )
@@ -102,8 +113,7 @@ def save_fit_auto_correlation(path_to_ref: str, path_to_csv_accor: str, output_d
 
             temp = pd.DataFrame(D, index=[0])
 
-            tau_table = pd.concat([tau_table, temp] )
+            tau_table = pd.concat([tau_table, temp])
 
         tau_table = tau_table.sort_values(by=['rId'])
-        tau_table.to_csv(os.path.join(output_directory, 'tau_%s_%d_exp.csv' % (fit_group, order)), index=False)
-
+        tau_table.to_csv(os.path.join(output_directory, 'tau_%d_exp.csv' % order), index=False)
