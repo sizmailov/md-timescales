@@ -32,15 +32,15 @@ def get_autocorr_CH3(trajectory: Union[Trajectory, pyxmolpp2.trajectory.Trajecto
                     if (r.name.str, atom.name.str) in CH3_dict.keys():
                         C = r[AtomName(CH3_dict[(r.name.str, atom.name.str)][0])]
                         H = r[AtomName(CH3_dict[(r.name.str, atom.name.str)][1])]
-                        CH3S[r.id, C.id] = (C, H)
-                        vectors[r.id, C.id] = VectorXYZ()
+                        CH3S[r.id, C.name] = (C, H)
+                        vectors[r.id, C.name] = VectorXYZ()
 
-        for (rid,Cid),(C,H) in CH3S.items():
-            vectors[rid, Cid].append(C.r - H.r)
+        for (rid,Cname),(C,H) in CH3S.items():
+            vectors[rid, Cname].append(C.r - H.r)
 
     autocorr = {
-        (rid,Cid): calc_autocorr_order_2(vector)
-        for (rid,Cid), vector in vectors.items()
+        (rid,Cname): calc_autocorr_order_2(vector)
+        for (rid,Cname), vector in vectors.items()
     }
 
     return autocorr
@@ -56,10 +56,9 @@ def extract_CH3_autocorr(path_to_trajectory: str, output_directory: str, traject
     """
     autocorr_CH3 = get_autocorr_CH3(traj)
     chain = ref.asChains[0]
-    for (rid,Cid), acorr in autocorr_CH3.items():
+    for (rid,Cname), acorr in autocorr_CH3.items():
         res_serial = rid.serial
-        aName = chain.asAtoms[Cid].aName.str
-        outname = "%02d_%s.csv"%(res_serial, aName,)
+        outname = "%02d_%s.csv"%(res_serial, Cname,)
         pd.DataFrame(np.array([ np.linspace(0,len(acorr)*0.002, len(acorr), endpoint=False), acorr]).T, 
                     columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, outname), index=False)
 
