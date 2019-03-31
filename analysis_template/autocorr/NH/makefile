@@ -18,11 +18,10 @@ data/fit/tau_NH_2_exp.csv data/fit/tau_NH_4_exp.csv: ${SCRIPT_DIR}/fit_NH_autoco
 		--path_to_ref="${TRAJECTORY_PATH}"
 
 
-data/acorr/02.csv data/acorr/${N_RESIDUES}.csv:  ${SCRIPT_DIR}/extract_NH_autocorr.py
+data/acorr/02.csv data/acorr/${N_RESIDUES}.csv:  ${SCRIPT_DIR}/extract_autocorr.py
 	mkdir -p data/acorr/
 	python3 "$<" \
-		--output_directory=data/acorr/ \
-		--length_trajectory="${TRAJECTORY_LENGTH}" \
-		--path_to_trajectory="${TRAJECTORY_PATH}"
-
-
+		--output-directory=data/acorr/ \
+		--trajectory-length="${TRAJECTORY_LENGTH}" \
+		--path-to-trajectory="${TRAJECTORY_PATH}" \
+		--vectors-group=NH
