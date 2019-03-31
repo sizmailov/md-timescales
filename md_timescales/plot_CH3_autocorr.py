@@ -73,7 +73,7 @@ def plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, path_to_output_pdf):
                 ax.set_xlim(-1, 20)
                 ax.set_xlabel('time, ns', fontsize = 13)
                 ax.set_ylabel('autocorrelation', fontsize = 13)
-                ax.set_title('CH3 autocorrelation plot %d exp %s%s'%(order, fit_line["rId"], fit_line["rName"]))
+                ax.set_title('CH3 autocorrelation plot %d exp %s%s%s'%(order, fit_line["rId"], fit_line["rName"], fit_line["aName"]))
                 ax.plot( df.time_ns, df.acorr)
                 ax.plot(df.time_ns, fit_func[order](df.time_ns, **popt))
                 ax.axvline(x=df.time_ns[limit], color='g', linestyle='--', label="fit limit %s"%(limit))
