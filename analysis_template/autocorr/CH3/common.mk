@@ -5,7 +5,7 @@ TRAJECTORY_PATH=/home/olebedenko/bioinf/trj/ubq/spce/NVE/
 
 .PHONY: all clean
 
-all: data/fit/tau_NH_2_exp.csv data/fit/tau_NH_4_exp.csv
+all: figures/tau_NH_2_exp.pdf figures/tau_NH_4_exp.pdf
 
 clean:
 	rm -rf data 
