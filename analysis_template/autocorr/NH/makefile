@@ -10,7 +10,7 @@ figures/tau_NH_2_exp.pdf figures/tau_NH_4_exp.pdf: ${SCRIPT_DIR}/plot_NH_autocor
 
 
 
-data/fit/tau_NH_2_exp.csv data/fit/tau_NH_4_exp.csv: ${SCRIPT_DIR}/fit_NH_autocotrr.py data/acorr/02.csv data/acorr/"${N_RESIDUES}".csv
+data/fit/tau_NH_2_exp.csv data/fit/tau_NH_4_exp.csv: ${SCRIPT_DIR}/fit_NH_autocotrr.py data/acorr/02.csv data/acorr/${N_RESIDUES}.csv
 	mkdir -p data/fit/
 	python3 "$<" \
 		--output_directory=data/fit/ \
@@ -18,7 +18,7 @@ data/fit/tau_NH_2_exp.csv data/fit/tau_NH_4_exp.csv: ${SCRIPT_DIR}/fit_NH_autoco
 		--path_to_ref="${TRAJECTORY_PATH}"
 
 
-data/acorr/02.csv data/acorr/"${N_RESIDUES}".csv:  ${SCRIPT_DIR}/extract_NH_autocorr.py
+data/acorr/02.csv data/acorr/${N_RESIDUES}.csv:  ${SCRIPT_DIR}/extract_NH_autocorr.py
 	mkdir -p data/acorr/
 	python3 "$<" \
 		--output_directory=data/acorr/ \
