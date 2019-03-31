@@ -1,7 +1,7 @@
-SCRIPT_DIR=/home/legosta/bioinf/scripts/md-timescales/md_timescales/
+SCRIPT_DIR=/home/sergei/PycharmProjects/md-timescales/md_timescales/
 N_RESIDUES=76
-TRAJECTORY_LENGTH=1000
-TRAJECTORY_PATH=/home/legosta/bioinf/trj/ubq/spce/NVE/
+TRAJECTORY_LENGTH=100
+TRAJECTORY_PATH=/home/sergei/bionmr/olebedenko/bioinf/trj/ubq/spce/NVE/
 
 .PHONY: all clean 
 

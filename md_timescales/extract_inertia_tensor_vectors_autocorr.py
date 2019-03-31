@@ -42,9 +42,9 @@ def extract_inertia_tensor_vectors_autocorr(path_to_trajectory: str, output_dire
     autocorr2 = calc_autocorr_order_2(vectors2)
     autocorr3 = calc_autocorr_order_2(vectors3)
 
-    pd.DataFrame(autocorr1, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling1.csv"), index = False)
-    pd.DataFrame(autocorr2, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling2.csv"), index = False)
-    pd.DataFrame(autocorr3, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling3.csv"), index = False)
+    pd.DataFrame(autocorr1, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling_1.csv"), index = False)
+    pd.DataFrame(autocorr2, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling_2.csv"), index = False)
+    pd.DataFrame(autocorr3, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling_3.csv"), index = False)
 
 if __name__ == '__main__':
     # path_to_trajectory = "/home/sergei/UBI/case_wong_replica/1ubq_intolerant_shake_ewald_SPCE/"
