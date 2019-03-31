@@ -26,7 +26,7 @@ def get_methyls_vectors(frame: Frame):
 
     atom_pairs = []
 
-    for r in frame.asResidues[1:]:
+    for r in frame.asResidues:
         for atom in r.asAtoms:
             if (r.name.str, atom.name.str) in CH3_dict.keys():
                 C = r[AtomName(CH3_dict[(r.name.str, atom.name.str)][0])]
