@@ -3,7 +3,7 @@ from md_timescales.extract import extract_autocorr, get_methyl_vectors
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Calc NH autocorr')
+    parser = argparse.ArgumentParser(description='Calc CH3 autocorr')
     parser.add_argument('-i', '--path_to_trajectory', required=True, )
     parser.add_argument('-o', '--output_directory', default="./")
     parser.add_argument('-l', '--length_trajectory', default=1, type=int)

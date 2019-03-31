@@ -90,6 +90,25 @@ def get_methyl_vectors(frame: Frame):
     return atom_pairs
 
 
+def get_NH_vectors(frame: Frame):
+    """
+
+    :param frame:
+    :return: List[Tuple(Atom,Atom)]
+    """
+
+    atom_pairs = []
+
+    for r in frame.asResidues:
+        try:
+            atom_pairs.append((r[AtomName("N")],r[AtomName("H")]))
+        except pyxmolpp2.polymer.OutOfRangeResidue:
+            pass
+
+    return atom_pairs
+
+
+
 def extract_inertia_tensor_vectors_autocorr(path_to_trajectory: str, output_directory: str) -> None:
     """
 
