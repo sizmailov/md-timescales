@@ -1,5 +1,4 @@
 from typing import List, Tuple
-import argparse
 import numpy as np
 from bionmr_utils.md import *
 import os
@@ -108,12 +107,3 @@ def save_fit_auto_correlation(path_to_ref: str, path_to_csv_accor: str, output_d
         tau_table = tau_table.sort_values(by=['rId'])
         tau_table.to_csv(os.path.join(output_directory, 'tau_%s_%d_exp.csv' % (fit_group, order)), index=False)
 
-if __name__ == '__main__':
-
-  #-ref  "/home/olebedenko/bioinf/1ubq/1ubq/" -accor "/home/olebedenko/bioinf/scripts/md-timescales/md_timescales"
-  parser = argparse.ArgumentParser(description='fit CH3 autocorr')
-  parser.add_argument('-ref', '--path_to_ref', required=True,)
-  parser.add_argument('-accor', '--path_to_csv_accor', required=True)
-  parser.add_argument('-o', '--output_directory', default=os.getcwd())
-  args = parser.parse_args()
-  save_fit_auto_correlation(args.path_to_ref, args.path_to_csv_accor, args.output_directory)
