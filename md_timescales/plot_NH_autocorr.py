@@ -21,7 +21,7 @@ def four_exp(x, a1, tau1, a2, tau2, a3, tau3, a4, tau4):
     return a1 * np.exp(-x / tau1) + a2 * np.exp(-x / tau2) + a3 * np.exp(-x / tau3) + a4 * np.exp(-x / tau4)
 
 
-def plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, path_to_output_pdf):
+def plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory):
     """
     Plot one pdf with a particular fit function (e.g. NH-acorr-2-exp.pdf)
      - [ ] Show acorr data
@@ -33,7 +33,7 @@ def plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, path_to_output_pdf):
     exp_order = {2: "tau_NH_2_exp", 3: "tau_NH_3_exp", 4: "tau_NH_4_exp"}
     csv_files = sorted(glob.glob(os.path.join(path_to_csv_acorr, "*.csv")))
     for order in range(2,5):
-        with PdfPages(os.path.join(path_to_output_pdf, exp_order[order] + ".pdf")) as pdf:
+        with PdfPages(os.path.join(output_directory, exp_order[order] + ".pdf")) as pdf:
             csv_fit =  os.path.join(path_to_fit_csv, exp_order[order] + ".csv")
             fit = pd.read_csv(csv_fit)
             for ind, file in enumerate(csv_files):
