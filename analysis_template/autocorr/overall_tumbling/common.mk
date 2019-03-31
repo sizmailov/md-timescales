@@ -5,7 +5,7 @@ TRAJECTORY_PATH=/home/legosta/bioinf/trj/ubq/spce/NVE/
 
 .PHONY: all clean 
 
-all: data/acorr/overall_tumbling1.csv data/acorr/overall_tumbling3.csv
+all: figures/tau_inertia_tensor_2_exp.pdf figures/tau_inertia_tensor_4_exp.pdf
 
 clean:
 	rm -rf data 
