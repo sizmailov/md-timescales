@@ -98,6 +98,7 @@ def save_fit_auto_correlation(path_to_ref: str,
             }
 
             if with_constant:
+                order = len(bounds[0]) // 2 + 1
                 D.update({"constant": popt[-1]})
                 popt = popt[:-1]
 
