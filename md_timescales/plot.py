@@ -1,6 +1,4 @@
-import argparse
 import matplotlib
-
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -8,8 +6,7 @@ import numpy as np
 import glob
 import os
 from matplotlib.backends.backend_pdf import PdfPages
-from fit import __multi_exp_f
-
+from .fit import __multi_exp_f
 
 def __get_autocorr_graph_label(fit_line):
     amplitude = fit_line.filter(like='-a')
