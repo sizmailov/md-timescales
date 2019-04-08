@@ -81,7 +81,7 @@ def save_fit_auto_correlation(path_to_ref: str,
 
     for bounds in curve_bounds:
         with_constant = len(bounds[0]) % 2 == 1
-        order = len(bounds[0]) // 2
+        order = (len(bounds[0]) + 1) // 2 
         tau_table = pd.DataFrame()
         for file in csv_files:
             name = os.path.splitext(os.path.basename(file))[0]

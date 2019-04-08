@@ -1,9 +1,9 @@
-SCRIPT_DIR=/home/sergei/PycharmProjects/md-timescales/md_timescales
+SCRIPT_DIR=/home/olebedenko/bioinf/scripts/md-timescales/md_timescales
 N_RESIDUES=76
 FIRST_CH3_RESIDUES = 03_CD1
 LAST_CH3_RESIDUES = 73_CD2
 TRAJECTORY_LENGTH=100
-TRAJECTORY_PATH=/home/sergei/bionmr/olebedenko/bioinf/trj/ubq/spce/NVE/
+TRAJECTORY_PATH=/home/olebedenko/bioinf/trj/ubq/spce/NVE/
 
 .PHONY: all clean
 
