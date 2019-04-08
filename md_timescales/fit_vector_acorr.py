@@ -1,5 +1,5 @@
 import argparse
-from md_timescales.fit import save_fit_auto_correlation
+from fit import save_fit_auto_correlation
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='fit CH3 autocorr')

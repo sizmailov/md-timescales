@@ -3,9 +3,9 @@ import pyxmolpp2
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-
 from typing import *
 from bionmr_utils.md import *
+from extract_time_step import extract_time_step_ns
 
 def extract_mass_center(path_to_trajectory: str, output_filename: str) -> None:
     """
@@ -55,10 +55,11 @@ def extract_autocorr(path_to_trajectory: str,
     """
     traj, ref = traj_from_dir(path_to_trajectory, first=1, last=trajectory_length)
     autocorr_CH3 = get_autocorr(traj, get_vectors=get_vectors)
+    time_step_ns = extract_time_step_ns(path_to_trajectory)
 
     for (rid, aname), acorr in autocorr_CH3.items():
         outname = "%02d_%s.csv" % (rid.serial, aname,)
-        pd.DataFrame(np.array([np.linspace(0, len(acorr) * 0.002, len(acorr), endpoint=False), acorr]).T,
+        pd.DataFrame(np.array([np.linspace(0, len(acorr) * time_step_ns, len(acorr), endpoint=False), acorr]).T,
                      columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, outname), index=False)
 
 

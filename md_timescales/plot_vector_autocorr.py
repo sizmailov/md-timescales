@@ -1,5 +1,5 @@
 import argparse
-from md_timescales.plot import plot_acorr_fit
+from plot import plot_acorr_fit
 
 if __name__ == '__main__':
 

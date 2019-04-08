@@ -1,5 +1,5 @@
 import argparse
-from md_timescales.extract import extract_autocorr, get_NH_vectors, get_methyl_vectors
+from extract import extract_autocorr, get_NH_vectors, get_methyl_vectors
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Calc autocorr for interactomic vectors')
