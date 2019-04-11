@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 from typing import *
 from bionmr_utils.md import *
-from extract_time_step import extract_time_step_ns
+from md_timescales.extract_time_step import extract_time_step_ns
 
 def extract_mass_center(path_to_trajectory: str, output_filename: str) -> None:
     """

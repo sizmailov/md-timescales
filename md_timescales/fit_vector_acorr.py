@@ -1,5 +1,5 @@
 import argparse
-from fit import save_fit_auto_correlation
+from md_timescales.fit import save_fit_auto_correlation
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='fit CH3 autocorr')
@@ -11,8 +11,8 @@ if __name__ == '__main__':
 
     bounds = {
         "NH": [
-            ([[0.05, 0.01, 0.05, 1], [1, 1, 1, 10]]),
-            ([[0.05, 0.01, 0.05, 0.1, 0.05, 1], [1, 0.1, 1, 1, 1, 10]]),
+            ([[0.1, 0.001, 0.05, 1], [1, 0.01, 1, 10]]),
+            ([[0.05, 0.01, 0.05, 0.1, 0.9, 1], [1, 0.1, 1, 1, 1, 10]]),
             ([[0.05, 0.001, 0.05, 0.01, 0.05, 1, 0.05, 10], [1, 0.01, 1, 0.1, 1, 10, 1, 100]]),
         ],
         "CH3": [
@@ -26,4 +26,5 @@ if __name__ == '__main__':
                               args.output_directory,
                               curve_bounds=bounds[args.vectors_group]
                               )
+
 
