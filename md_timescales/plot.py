@@ -48,7 +48,6 @@ def settings_plot(graph_label):
 def plot_figure_autocorr(time, fit_line, acorr):
 
     amplitude = fit_line.filter(like='-a')
-    print(amplitude)
     tau = fit_line.filter(like='-tau')
     if fit_line['aName'][0] == "C":
         constant=fit_line['constant']
@@ -64,7 +63,7 @@ def plot_figure_autocorr(time, fit_line, acorr):
     fig, ax = settings_plot(graph_label)
     if aname == "N":
         ax.set_title('NH autocorrelation plot %d exp %s %s' % (order, rid, rname))
-        ax.set_xlim(-0.05, 20)
+        ax.set_xlim(-1, 20)
     elif aname[0] == "C":
         ax.set_title('CH3 autocorrelation plot %d exp %s %s %s' % (order, rid, rname, aname))
         ax.set_xlim(-0.05, 2)
