@@ -8,6 +8,21 @@ from typing import *
 from bionmr_utils.md import *
 
 
+def extract_time_step_ns(path_to_trajectory):
+    path_to_firt_run_in = os.path.join(path_to_trajectory, "5_run", "run00001.in")
+    with open(path_to_firt_run_in) as first_run_in:
+        for line in first_run_in:
+            row = line.strip().split()
+            if row[0] == 'nstlim':
+                nstlim = int(row[2])
+            if row[0] == 'ntpr':
+                ntpr = int(row[2])
+            if row[0] == 'dt':
+                dt = float(row[2])
+    time_step_ns = (dt * 1000) / (nstlim / ntpr)
+    return time_step_ns
+
+
 def atom_name_mass_map(atom: Atom):
     atomics_weight = {'H': 1.008, 'C': 12.011, 'N': 14.007, 'O': 15.999, 'P': 30.973762, 'S': 32.06}
     return atomics_weight[atom.name.str[0]]
@@ -70,6 +85,7 @@ def extract_mass_center(traj: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
             bsf.scale_lattice_by(1 / factor_scale)
     return np.array(time), mass_centers
 
+
 def get_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice], get_vectors) -> dict:
     """
     :param trajectory
@@ -109,10 +125,11 @@ def extract_autocorr(path_to_trajectory: str,
     """
     traj, ref = traj_from_dir(path_to_trajectory, first=1, last=trajectory_length)
     autocorr_CH3 = get_autocorr(traj, get_vectors=get_vectors)
+    time_step_ns = extract_time_step_ns(path_to_trajectory)
 
     for (rid, aname), acorr in autocorr_CH3.items():
         outname = "%02d_%s.csv" % (rid.serial, aname,)
-        pd.DataFrame(np.array([np.linspace(0, len(acorr) * 0.002, len(acorr), endpoint=False), acorr]).T,
+        pd.DataFrame(np.array([np.linspace(0, len(acorr) * time_step_ns, len(acorr), endpoint=False), acorr]).T,
                      columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, outname), index=False)
 
 
@@ -155,7 +172,7 @@ def get_NH_vectors(frame: Frame):
 
     for r in frame.asResidues:
         try:
-            atom_pairs.append((r[AtomName("N")],r[AtomName("H")]))
+            atom_pairs.append((r[AtomName("N")], r[AtomName("H")]))
         except pyxmolpp2.polymer.OutOfRangeResidue:
             pass
 
