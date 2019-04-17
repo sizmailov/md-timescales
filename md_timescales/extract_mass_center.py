@@ -3,7 +3,7 @@ import argparse
 import os
 import pandas as pd
 from tqdm import tqdm
-from md_timescales.extract import extract_mass_center, extract_lattice_vectors_rst7
+from md_timescales.extract import extract_mass_center, extract_lattice_vectors_rst7, extract_time_step_ns
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract mass center')
@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     time, cm = extract_mass_center(
         tqdm(traj_from_dir(args.path_to_trajectory, last=args.trajectory_length)[0]),
-        dt=0.002,
+        dt=extract_time_step_ns(args.path_to_trajectory),
         lattice_vectors=lattice_vectors,
         volume=volume
     )
