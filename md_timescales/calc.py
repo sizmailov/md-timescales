@@ -1,8 +1,29 @@
-import pandas as pd
+import numpy as np
+from typing import Tuple
 
 
-def calc_mean_square_displacement(mass_center: pd.DataFrame) -> pd.DataFrame:
+def calc_mean_square_displacement(time: np.array,
+                                  mass_centers: np.array,
+                                  lag_index: np.array
+                                  ) -> Tuple[np.array, np.array]:
     """
-    :param mass_center: contains [time_ns,x,y,z] columns
-    :return: data frame with [time_ns, msd] columns
+    :param time: time-points between mass_centers
+    :param mass_centers: N*3 array [x,y,z] columns
+    :param lag_index: int array of time lags between mass_centers
+    :return: tuple of two arrays (time_lag, msd)
     """
+
+    assert time.shape[0] == mass_centers.shape[0]
+    assert mass_centers.shape[1] == 3
+
+    time_lags = []
+    msds = []
+    for int_lag in lag_index:
+        lag_time = time[int_lag]
+        msd = ((mass_centers[int_lag:] - mass_centers[:len(mass_centers)-int_lag])**2).sum(axis=1).mean()
+        time_lags.append(lag_time)
+        msds.append(msd)
+
+    return np.array(time_lags), np.array(msds)
+
+

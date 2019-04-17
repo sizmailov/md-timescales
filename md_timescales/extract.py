@@ -7,14 +7,68 @@ from tqdm import tqdm
 from typing import *
 from bionmr_utils.md import *
 
-def extract_mass_center(path_to_trajectory: str, output_filename: str) -> None:
-    """
 
-    :param path_to_trajectory:
-    :param output_filename: name of output four-column .csv file [time_ns,x,y,z]
-    """
-    ...
+def atom_name_mass_map(atom: Atom):
+    atomics_weight = {'H': 1.008, 'C': 12.011, 'N': 14.007, 'O': 15.999, 'P': 30.973762, 'S': 32.06}
+    return atomics_weight[atom.name.str[0]]
 
+
+def extract_lattice_vectors_rst7(lattice_path):
+    with open(lattice_path, "r") as in_file:
+        last_line = in_file.readlines()[-1].split()
+        vectors = [float(coordinate) for coordinate in last_line[0:3]]
+        angles = [Degrees(float(coordinate)) for coordinate in last_line[3:]]
+    return LatticeVectors(vectors[0], vectors[1], vectors[2],
+                          angles[0], angles[1], angles[2])
+
+
+def extract_mass_center(traj: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice],
+                        dt: float,
+                        lattice_vectors: LatticeVectors,
+                        volume: np.array = None,
+                        atom_selector: Callable[[Atom], bool] = lambda _: True,
+                        atom_mass_map: Callable[[Atom], float] = atom_name_mass_map
+                        ) -> Tuple[np.array, VectorXYZ]:
+    """
+    Extract mass center
+
+    :param traj: trajectory
+    :param dt: time between trajectory frames
+    :param lattice_vectors: translational vectors for periodic boundary conditions
+    :param volume: cell volume along the trajectory. Must match *whole* trajectory in length.
+                   If None no lattice_vectors rescale is performed
+    :param atom_selector: selector for atom
+    :param atom_mass_map: function to determinate mass of atom
+
+    """
+    time = []
+    mass_centers = VectorXYZ()
+    atoms = None
+    prev_cm = None
+    for frame in traj:
+        if atoms is None:
+            atoms = frame.asAtoms.filter(atom_selector)
+            masses = [atom_mass_map(atom) for atom in atoms]
+            bsf = BestShiftFinder(lattice_vectors)
+            reference_volume = lattice_vectors[0].dot(lattice_vectors[1].cross(lattice_vectors[2]))
+
+        if volume:
+            factor_scale = (volume[frame.index] / reference_volume) ** (1 / 3)
+            bsf.scale_lattice_by(factor_scale)
+
+        current_cm = atoms.mass_center(masses)
+
+        if prev_cm:
+            current_cm += bsf.find_best_shift(prev_cm, current_cm)[1]
+
+        time.append(frame.index * dt)
+        mass_centers.append(current_cm)
+
+        prev_cm = current_cm
+
+        if volume:
+            bsf.scale_lattice_by(1 / factor_scale)
+    return np.array(time), mass_centers
 
 def get_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice], get_vectors) -> dict:
     """
@@ -106,7 +160,6 @@ def get_NH_vectors(frame: Frame):
             pass
 
     return atom_pairs
-
 
 
 def extract_inertia_tensor_vectors_autocorr(path_to_trajectory: str, output_directory: str) -> None:
