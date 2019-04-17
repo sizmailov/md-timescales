@@ -47,7 +47,7 @@ def get_translation_fit(path_to_msd, output_directory):
     ax.set_xlabel('time, ns', fontsize = 13)
     ax.set_ylabel('msd, A^2', fontsize = 13)
     ax.set_title('Mean square displacement center mass (msd)')
-    ax.plot(df_msd.time_ns, df_msd.delta_rsquare)
+    ax.plot(df_msd.time_ns, df_msd.msd)
     #ax.plot(df_msd.time_ns, linear_fit(df_msd.time_ns, *popt))
     # ax.axvline(x=df_msd.time_ns[limit], color='g', linestyle='--', label="fit limit %s"%(limit))
     ax.grid(True)
