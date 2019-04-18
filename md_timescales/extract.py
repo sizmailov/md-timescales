@@ -3,7 +3,6 @@ import pyxmolpp2
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-
 from typing import *
 from bionmr_utils.md import *
 
@@ -85,18 +84,34 @@ def extract_mass_center(traj: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
             bsf.scale_lattice_by(1 / factor_scale)
     return np.array(time), mass_centers
 
+def align_ca(ref_ca, frame_ca, frame):
+    alignment = frame_ca.alignment_to(ref_ca)
+    return frame.asAtoms.transform(alignment)
 
-def get_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice], get_vectors) -> dict:
+def get_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice], ca_alignment, get_vectors) -> dict:
     """
     :param trajectory
     """
+    ref = trajectory[0]
+    ref_ca = ref.asAtoms.filter(aName == "CA")
+    frame_ca = None
     CH3S = None
     vectors = None
     for frame in tqdm(trajectory):
+        if ca_alignment:
+            if frame_ca is None:
+                frame_ca = frame.asAtoms.filter(aName == "CA")
+            new_frame = align_ca(ref_ca, frame_ca, frame)
+            # ind = 1
+            # while ind<4:
+            #     new_frame.to_pdb(str(ind) + ".pdb")
+            # ind += 1
+        else:
+            new_frame = frame
         if CH3S is None:
             CH3S = {}
             vectors = {}
-            for A, B in get_vectors(frame):
+            for A, B in get_vectors(new_frame):
                 CH3S[A.rId, A.aName] = (A, B)
                 vectors[A.rId, A.aName] = VectorXYZ()
 
@@ -110,12 +125,17 @@ def get_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySl
 
     return autocorr
 
+def save_autocorr(autocorr, time_step_ns, output_directory):
+    for (rid, aname), acorr in autocorr.items():
+        outname = "%02d_%s.csv" % (rid.serial, aname,)
+        pd.DataFrame(np.array([np.linspace(0, len(acorr) * time_step_ns, len(acorr), endpoint=False), acorr]).T,
+                     columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, outname), index=False)
 
-def extract_autocorr(path_to_trajectory: str,
-                     output_directory: str,
+def pipeline_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice],
+                     time_step_ns: List[float],
+                     output_directory: str,\
                      get_vectors: Callable[[Frame], List[Tuple[Atom, Atom]]],
-                     trajectory_length: int
-                     ) -> None:
+                     ca_alignment: bool) -> None:
     """
 
     :param get_vectors: returns list of atom pairs of interest
@@ -123,14 +143,30 @@ def extract_autocorr(path_to_trajectory: str,
     :param trajectory_length: number of .dat files to process
     :param output_directory: output directory for two-column .csv files [time_ns, acorr]
     """
-    traj, ref = traj_from_dir(path_to_trajectory, first=1, last=trajectory_length)
-    autocorr_CH3 = get_autocorr(traj, get_vectors=get_vectors)
-    time_step_ns = extract_time_step_ns(path_to_trajectory)
+    autocorr = get_autocorr(trajectory, ca_alignment, get_vectors=get_vectors)
+    save_autocorr(autocorr, time_step_ns, output_directory)
 
-    for (rid, aname), acorr in autocorr_CH3.items():
-        outname = "%02d_%s.csv" % (rid.serial, aname,)
-        pd.DataFrame(np.array([np.linspace(0, len(acorr) * time_step_ns, len(acorr), endpoint=False), acorr]).T,
-                     columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, outname), index=False)
+
+def extract_autocorr(path_to_trajectory: str,
+                     output_directory: str,
+                     get_vectors: Callable[[Frame], List[Tuple[Atom, Atom]]],
+                     trajectory_length: int,
+                     ca_alignment: bool) -> None:
+    """
+
+    :param get_vectors: returns list of atom pairs of interest
+    :param path_to_trajectory:
+    :param trajectory_length: number of .dat files to process
+    :pa
+    """
+    trajectory, ref = traj_from_dir(path_to_trajectory, first=1, last=trajectory_length)
+    time_step_ns = extract_time_step_ns(path_to_trajectory)
+    pipeline_autocorr(trajectory, time_step_ns, output_directory, get_vectors, ca_alignment=False)
+    if ca_alignment:
+        output_directory = os.path.join(output_directory, "ca_alignment")
+        os.makedirs(output_directory, exist_ok=True)
+        pipeline_autocorr(trajectory, time_step_ns, output_directory, get_vectors, ca_alignment=True)
+
 
 
 def get_methyl_vectors(frame: Frame):

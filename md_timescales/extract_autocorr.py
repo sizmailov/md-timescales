@@ -14,7 +14,12 @@ if __name__ == '__main__':
         "CH3": get_methyl_vectors,
     }
 
+    ca_alignment = {"NH": False,
+                    "CH3": True}
+
     extract_autocorr(args.path_to_trajectory,
                      args.output_directory,
                      trajectory_length=args.trajectory_length,
-                     get_vectors=get_vectors[args.vectors_group])
+                     get_vectors=get_vectors[args.vectors_group], ca_alignment=ca_alignment[args.vectors_group]
+                     )
+
