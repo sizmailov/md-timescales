@@ -67,7 +67,7 @@ def extract_mass_center(traj: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
             bsf = BestShiftFinder(lattice_vectors)
             reference_volume = lattice_vectors[0].dot(lattice_vectors[1].cross(lattice_vectors[2]))
 
-        if volume:
+        if volume is not None:
             factor_scale = (volume[frame.index] / reference_volume) ** (1 / 3)
             bsf.scale_lattice_by(factor_scale)
 
@@ -81,7 +81,7 @@ def extract_mass_center(traj: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
 
         prev_cm = current_cm
 
-        if volume:
+        if volume is not None:
             bsf.scale_lattice_by(1 / factor_scale)
     return np.array(time), mass_centers
 

@@ -6,6 +6,7 @@ FIRST_CH3_RESIDUES:=$(shell python ${SCRIPT_DIR}/makefile_config.py --first-ch3-
 LAST_CH3_RESIDUES:=$(shell python ${SCRIPT_DIR}/makefile_config.py --last-ch3-residue)
 TRAJECTORY_LENGTH:=$(shell python ${SCRIPT_DIR}/makefile_config.py --trajectory-length)
 TRAJECTORY_PATH:=$(shell python ${SCRIPT_DIR}/makefile_config.py --trajectory-path)
-VOLUME_OR_RST7:=$(shell python ${SCRIPT_DIR}/makefile_config.py --volume-or-rst7)
+VOLUME_FILE:=$(shell python ${SCRIPT_DIR}/makefile_config.py --volume-file)
+LATTICE_RST7_FILE:=$(shell python ${SCRIPT_DIR}/makefile_config.py --lattice-rst7-file)
 
 PYTHONPATH:=${SCRIPT_DIR}/..

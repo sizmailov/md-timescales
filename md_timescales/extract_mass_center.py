@@ -10,16 +10,16 @@ if __name__ == '__main__':
     parser.add_argument('--path-to-trajectory', required=True, )
     parser.add_argument('--output-directory', default=os.getcwd())
     parser.add_argument('--trajectory-length', required=True, type=int)
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--volume-file', type=str, default=None)
-    group.add_argument('--lattice-rst7-file', type=str, default=None)
+    parser.add_argument('--volume-file', type=str, default=None)
+    parser.add_argument('--lattice-rst7-file', type=str, default=None)
 
     args = parser.parse_args()
 
-    if args.volume_file:
+    if args.volume_file and args.volume_file != "None":
         volume = pd.read_csv(args.volume_file, sep=r"\s+").values[:, 1]
         lattice_vectors = extract_lattice_vectors_rst7(os.path.join(args.path_to_trajectory, "1_build", "box.inpcrd"))
     else:
+        assert args.lattice_rst7_file != "None"
         volume = None
         lattice_vectors = extract_lattice_vectors_rst7(args.lattice_rst7_file)
 
