@@ -1,4 +1,5 @@
-include common.mk
+SCRIPT_DIR:=${HOME}/bioinf/md-timescales/md_timescales
+include ${SCRIPT_DIR}/../analysis_template/autocorr/CH3/common.mk
 
 figures/tau_2_exp.pdf figures/tau_4_exp.pdf: ${SCRIPT_DIR}/plot_vector_autocorr.py data/fit/tau_2_exp.csv data/fit/tau_4_exp.csv
 	mkdir -p figures
