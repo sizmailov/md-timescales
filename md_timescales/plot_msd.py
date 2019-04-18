@@ -11,23 +11,9 @@ from scipy.optimize import curve_fit
 from bionmr_utils.md import  *
 
 
-
-def fit_limit(data):
-    def moving_average(data_set, periods=1):
-        weights = np.ones(periods) / periods
-        return np.convolve(data_set, weights, mode='valid')
-    diff = np.diff(data)
-    pos_diff = (diff > 0).astype(int)
-    window_size = 30000
-    pos_diff_avg = moving_average(pos_diff, window_size)
-    index = np.argmax(pos_diff_avg>0.5) + window_size//2
-    return index
-
-def linear_fit(x, a1):
-    return a1*x
-
-
-def get_translation_fit(path_to_msd, output_directory): 
+def get_translation_fit(path_to_msd, path_to_fit, output_directory):
+    assert os.path.isfile(path_to_msd)
+    assert os.path.isfile(path_to_fit)
     df_msd = pd.read_csv(path_to_msd)
     #popt, pcov = curve_fit(linear_fit, df_msd.time_ns[:limit], df_msd.delta_rsquare[:limit])
 
@@ -47,7 +33,12 @@ def get_translation_fit(path_to_msd, output_directory):
     ax.set_xlabel('time, ns', fontsize = 13)
     ax.set_ylabel('msd, A^2', fontsize = 13)
     ax.set_title('Mean square displacement center mass (msd)')
-    ax.plot(df_msd.time_ns, df_msd.msd)
+    ax.plot(df_msd.time_ns, df_msd.msd,label="")
+    fit = pd.read_csv(path_to_fit)
+    p_coeff = [fit["a1"][0], fit["a0"][0]]
+    P = np.poly1d(p_coeff)
+    ax.plot(df_msd.time_ns, P(df_msd.time_ns), label="D = {:.3e} $m^2/s$".format(1e-10**2/1e-9/6))
+    ax.legend()
     #ax.plot(df_msd.time_ns, linear_fit(df_msd.time_ns, *popt))
     # ax.axvline(x=df_msd.time_ns[limit], color='g', linestyle='--', label="fit limit %s"%(limit))
     ax.grid(True)
@@ -61,6 +52,7 @@ if __name__ == '__main__':
     # -i "/home/olebedenko/bioinf/scripts/md-timescales/md_timescales/msd.csv -lim 78000"
     parser = argparse.ArgumentParser(description='Plot msd autocorrelation')
     parser.add_argument('--path-to-msd', required=True)
+    parser.add_argument('--path-to-fit', required=True)
     parser.add_argument('--output-directory', default=os.getcwd())
     args = parser.parse_args()
-    get_translation_fit(args.path_to_msd, args.output_directory)
+    get_translation_fit(args.path_to_msd, args.path_to_fit, args.output_directory)
