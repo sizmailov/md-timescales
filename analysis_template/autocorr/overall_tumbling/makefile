@@ -1,4 +1,5 @@
-include common.mk
+SCRIPT_DIR:=${HOME}/bioinf/md-timescales/md_timescales
+include ${SCRIPT_DIR}/../analysis_template/autocorr/overall_tumbling/common.mk
 
 
 figures/overall_tumbling.pdf: ${SCRIPT_DIR}/plot_overall_tumbling.py data/fit/tau_1_exp.csv

@@ -1,11 +1,5 @@
-SCRIPT_DIR=/home/sergei/PycharmProjects/md-timescales/md_timescales/
-N_RESIDUES=76
-TRAJECTORY_LENGTH=100
-TRAJECTORY_PATH=/home/sergei/bionmr/olebedenko/bioinf/trj/ubq/spce/NVE/
-PYTHONPATH=${SCRIPT_DIR}/..
+include ${SCRIPT_DIR}/../analysis_template/common.mk
 
-.PHONY: all clean
-.EXPORT_ALL_VARIABLES:
 
 all: figures/overall_tumbling.pdf
 
