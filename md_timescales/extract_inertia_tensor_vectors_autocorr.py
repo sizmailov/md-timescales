@@ -4,6 +4,7 @@ import numpy as np
 import os
 import pandas as pd
 import argparse
+from md_timescales.extract import extract_time_step_ns
 
 def diagonalize(A):
     eigen_values, eigen_vectors = np.linalg.eig(A)
@@ -41,22 +42,17 @@ def extract_inertia_tensor_vectors_autocorr(path_to_trajectory: str, output_dire
     autocorr1 = calc_autocorr_order_2(vectors1)
     autocorr2 = calc_autocorr_order_2(vectors2)
     autocorr3 = calc_autocorr_order_2(vectors3)
-    T = np.linspace(0,len(autocorr1)*0.002, len(autocorr1))
+    T = np.linspace(0,len(autocorr1)*extract_time_step_ns(path_to_trajectory), len(autocorr1))
 
-    pd.DataFrame(autocorr1, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling_1.csv"), index = False)
-    pd.DataFrame(autocorr2, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling_2.csv"), index = False)
-    pd.DataFrame(autocorr3, columns=["C"]).to_csv(os.path.join(output_directory, "overall_tumbling_3.csv"), index = False)
-    pd.DataFrame(np.array([T, autocorr1]).T, columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, "overall_tumbling_1.csv"), index = False)
-    pd.DataFrame(np.array([T, autocorr2]).T, columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, "overall_tumbling_2.csv"), index = False)
-    pd.DataFrame(np.array([T, autocorr3]).T, columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, "overall_tumbling_3.csv"), index = False)
+    pd.DataFrame(np.array([T, autocorr1]).T, columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, "tumbling_x.csv"), index = False)
+    pd.DataFrame(np.array([T, autocorr2]).T, columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, "tumbling_y.csv"), index = False)
+    pd.DataFrame(np.array([T, autocorr3]).T, columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, "tumbling_z.csv"), index = False)
 
 if __name__ == '__main__':
-    # path_to_trajectory = "/home/sergei/UBI/case_wong_replica/1ubq_intolerant_shake_ewald_SPCE/"
-    # output_directory = "data"
     parser = argparse.ArgumentParser(description='Calculate_overall_tumbling')
-    parser.add_argument('-i', '--path_to_trajectory', required=True, )
-    parser.add_argument('-o', '--output_directory', default=os.getcwd())
-    parser.add_argument('-l', '--trajectory_length', default=1, type=int)
+    parser.add_argument('--path-to-trajectory', required=True, )
+    parser.add_argument('--output-directory', default=os.getcwd())
+    parser.add_argument('--trajectory-length', default=1, type=int)
     args = parser.parse_args()
     extract_inertia_tensor_vectors_autocorr(args.path_to_trajectory, args.output_directory, args.trajectory_length)
 

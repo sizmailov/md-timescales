@@ -73,7 +73,9 @@ def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[fl
 def save_fit_auto_correlation(path_to_ref: str,
                               path_to_csv_acorr: str,
                               output_directory: str,
-                              curve_bounds: List[List[List[Union[float, int]]]]):
+                              curve_bounds: List[List[List[Union[float, int]]]],
+                              tumbling=False
+                              ):
     traj, ref = traj_from_dir(path_to_ref, first=1, last=1)
 
     chain = ref.asChains[0]
@@ -81,21 +83,29 @@ def save_fit_auto_correlation(path_to_ref: str,
 
     for bounds in curve_bounds:
         with_constant = len(bounds[0]) % 2 == 1
-        order = (len(bounds[0]) + 1) // 2 
+        order = (len(bounds[0]) + 1) // 2
         tau_table = pd.DataFrame()
         for file in csv_files:
-            name = os.path.splitext(os.path.basename(file))[0]
-            rid, aname = name.split("_")
-            rid = ResidueId(int(rid))
 
             df = pd.read_csv(file)
             limit, popt = fit_auto_correlation(df.time_ns,
                                                df.acorr,
                                                bounds=bounds)
 
-            D = {
-                'rName': chain[rid].name.str, 'aName': aname, 'rId': rid.serial, 'limit': limit
-            }
+            name = os.path.splitext(os.path.basename(file))[0]
+
+            if tumbling:
+                axis = name.split("_")[-1]
+                D = {
+                    'axis': axis, 'limit': limit
+                }
+            else:
+                rid, aname = name.split("_")
+                rid = ResidueId(int(rid))
+
+                D = {
+                    'rName': chain[rid].name.str, 'aName': aname, 'rId': rid.serial, 'limit': limit
+                }
 
             if with_constant:
                 D.update({"constant": popt[-1]})
@@ -114,6 +124,8 @@ def save_fit_auto_correlation(path_to_ref: str,
             temp = pd.DataFrame(D, index=[0])
 
             tau_table = pd.concat([tau_table, temp])
-
-        tau_table = tau_table.sort_values(by=['rId'])
+        if tumbling:
+            tau_table.sort_values(by=['axis'], inplace=True)
+        else:
+            tau_table.sort_values(by=['rId'], inplace=True)
         tau_table.to_csv(os.path.join(output_directory, 'tau_%d_exp.csv' % order), index=False)
