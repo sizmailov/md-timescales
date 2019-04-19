@@ -75,7 +75,7 @@ def plot_figure_autocorr(time, fit_line, acorr):
     return fig, ax
 
 
-def pipeline_plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory):
+def get_plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory):
     """
     Plot one pdf with a particular fit function (e.g. NH-acorr-2-exp.pdf)
      - [ ] Show acorr data
@@ -96,13 +96,13 @@ def pipeline_plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory
                 plt.close(fig)
 
 def plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory, ca_alignment=False):
-    pipeline_plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory)
+    get_plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory)
     if ca_alignment:
         path_to_fit_csv = os.path.join(path_to_fit_csv, "ca_alignment")
         path_to_csv_acorr = os.path.join(path_to_csv_acorr, "ca_alignment")
         output_directory = os.path.join(output_directory, "ca_alignment")
         os.makedirs(output_directory, exist_ok=True)
-        pipeline_plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory)
+        get_plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory)
 
 
 

@@ -70,7 +70,7 @@ def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[fl
     ...
 
 
-def pipeline_fit_auto_correlation(ref_chain,
+def get_fit_auto_correlation(ref_chain,
                               csv_files,
                               output_directory: str,
                               curve_bounds: List[List[List[Union[float, int]]]],
@@ -135,12 +135,12 @@ def save_fit_auto_correlation(path_to_ref: str,
     traj, ref = traj_from_dir(path_to_ref, first=1, last=1)
     ref_chain = ref.asChains[0]
     csv_files = sorted(glob.glob(os.path.join(path_to_csv_acorr, "*.csv")))
-    pipeline_fit_auto_correlation(ref_chain, csv_files, output_directory,
+    get_fit_auto_correlation(ref_chain, csv_files, output_directory,
                                   curve_bounds,ca_alignment, tumbling)
 
     if ca_alignment:
         path_to_csv_acorr = os.path.join(path_to_csv_acorr, "ca_alignment")
         output_directory = os.path.join(output_directory, "ca_alignment")
         os.makedirs(output_directory, exist_ok=True)
-        pipeline_fit_auto_correlation(ref_chain, csv_files, output_directory,
+        get_fit_auto_correlation(ref_chain, csv_files, output_directory,
                                   curve_bounds,ca_alignment, tumbling)

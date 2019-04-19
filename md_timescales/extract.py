@@ -157,7 +157,7 @@ def save_autocorr(autocorr: dict,
                      columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, outname), index=False)
 
 
-def calc_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice],
+def get_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice],
                   time_step_ns: float,
                   output_directory: str,
                   get_vectors: Callable[[Frame], List[Tuple[Atom, Atom]]],
@@ -189,11 +189,11 @@ def extract_autocorr(path_to_trajectory: str,
     """
     trajectory, ref = traj_from_dir(path_to_trajectory, first=1, last=trajectory_length)
     time_step_ns = extract_time_step_ns(path_to_trajectory)
-    calc_autocorr(trajectory, time_step_ns, output_directory, get_vectors, ca_alignment=False)
+    get_autocorr(trajectory, time_step_ns, output_directory, get_vectors, ca_alignment=False)
     if ca_alignment:
         output_directory = os.path.join(output_directory, "ca_alignment")
         os.makedirs(output_directory, exist_ok=True)
-        calc_autocorr(trajectory, time_step_ns, output_directory, get_vectors, ca_alignment=True)
+        get_autocorr(trajectory, time_step_ns, output_directory, get_vectors, ca_alignment=True)
 
 
 def get_methyl_vectors(frame: Frame) -> List[Tuple(Atom, Atom)]:
