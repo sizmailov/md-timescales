@@ -18,7 +18,7 @@ def get_translation_fit(path_to_msd, path_to_fit, output_directory):
     #popt, pcov = curve_fit(linear_fit, df_msd.time_ns[:limit], df_msd.delta_rsquare[:limit])
 
     fig = plt.figure()
-    ax = fig.add_subplot(111)
+    ax = fig.add_subplot(111) # type: plt.Axes
     # graph_label = "{a1:.2f}".format(a1=popt[0]) + " A^2/ns"
     left, width = .08, .08
     bottom, height = .43, .43
@@ -37,7 +37,8 @@ def get_translation_fit(path_to_msd, path_to_fit, output_directory):
     fit = pd.read_csv(path_to_fit)
     p_coeff = [fit["a1"][0], fit["a0"][0]]
     P = np.poly1d(p_coeff)
-    ax.plot(df_msd.time_ns, P(df_msd.time_ns), label="D = {:.3e} $m^2/s$".format(1e-10**2/1e-9/6))
+    ax.plot(df_msd.time_ns, P(df_msd.time_ns), label="D = {:.3e} $m^2/s$".format(fit["a1"][0]*1e-10**2/1e-9/6))
+    ax.axvline(fit["fit_limit_ns"][0],lw=1,ls="--",color="green")
     ax.legend()
     #ax.plot(df_msd.time_ns, linear_fit(df_msd.time_ns, *popt))
     # ax.axvline(x=df_msd.time_ns[limit], color='g', linestyle='--', label="fit limit %s"%(limit))

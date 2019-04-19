@@ -11,10 +11,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     df = pd.read_csv(os.path.join(args.path_to_msd, "msd.csv"))
-    N = int(len(df)*args.fit_fraction)
+    N = (df["time_ns"] > df["time_ns"].max() * args.fit_fraction).idxmax()
+
     p_coeff = np.polyfit(df["time_ns"][:N], df["msd"][:N], 1)
 
     pd.DataFrame({
         "a1": [p_coeff[0]],
-        "a0": [p_coeff[1]]
-    }).to_csv(os.path.join(args.output_directory, "fit.csv"),index=False)
+        "a0": [p_coeff[1]],
+        "fit_limit_ns": [df["time_ns"][N]],
+        "fit_limit_n": [N]
+    }).to_csv(os.path.join(args.output_directory, "fit.csv"), index=False)
