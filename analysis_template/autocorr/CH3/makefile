@@ -7,6 +7,7 @@ figures/tau_2_exp.pdf figures/tau_4_exp.pdf: ${SCRIPT_DIR}/plot_vector_autocorr.
 		--path-to-fit=data/fit/ \
 		--path-to-acorrs=data/acorr/ \
 		--output-directory=figures \
+		--vectors-group=CH3
 
 
 data/fit/tau_2_exp.csv data/fit/tau_4_exp.csv: ${SCRIPT_DIR}/fit_vector_acorr.py data/acorr/${FIRST_CH3_RESIDUES}.csv data/acorr/${LAST_CH3_RESIDUES}.csv
