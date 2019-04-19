@@ -8,5 +8,10 @@ if __name__ == '__main__':
     parser.add_argument('--path-to-fit', required=True)
     parser.add_argument('--path-to-acorrs', required=True)
     parser.add_argument('--output-directory', default="./")
+    parser.add_argument('--vectors-group', choices=["NH", "CH3"], type=str)
     args = parser.parse_args()
-    plot_acorr_fit(args.path_to_fit, args.path_to_acorrs, args.output_directory)
+
+    ca_alignment = {"NH": False,
+                    "CH3": True}
+    plot_acorr_fit(args.path_to_fit, args.path_to_acorrs, args.output_directory, 
+    			   ca_alignment=ca_alignment[args.vectors_group])
