@@ -82,9 +82,6 @@ def extract_mass_center(traj: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
             bsf.scale_lattice_by(1 / factor_scale)
     return np.array(time), mass_centers
 
-def align_ca(ref_ca, frame_ca, frame):
-    alignment = frame_ca.alignment_to(ref_ca)
-    return frame.asAtoms.transform(alignment)
 
 def get_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice], ca_alignment, get_vectors) -> dict:
     """
@@ -99,13 +96,12 @@ def get_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySl
         if ca_alignment:
             if frame_ca is None:
                 frame_ca = frame.asAtoms.filter(aName == "CA")
-            new_frame = align_ca(ref_ca, frame_ca, frame)
+            alignment = frame_ca.alignment_to(ref_ca)
+            frame.asAtoms.transform(alignment)
             # ind = 1
             # while ind<4:
             #     new_frame.to_pdb(str(ind) + ".pdb")
             # ind += 1
-        else:
-            new_frame = frame
         if CH3S is None:
             CH3S = {}
             vectors = {}
