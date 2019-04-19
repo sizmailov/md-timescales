@@ -70,16 +70,13 @@ def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[fl
     ...
 
 
-def save_fit_auto_correlation(path_to_ref: str,
-                              path_to_csv_acorr: str,
+def pipeline_fit_auto_correlation(ref_chain,
+                              csv_files,
                               output_directory: str,
                               curve_bounds: List[List[List[Union[float, int]]]],
+                              ca_alignment=False,
                               tumbling=False
                               ):
-    traj, ref = traj_from_dir(path_to_ref, first=1, last=1)
-
-    chain = ref.asChains[0]
-    csv_files = sorted(glob.glob(os.path.join(path_to_csv_acorr, "*.csv")))
 
     for bounds in curve_bounds:
         with_constant = len(bounds[0]) % 2 == 1
@@ -91,20 +88,18 @@ def save_fit_auto_correlation(path_to_ref: str,
             limit, popt = fit_auto_correlation(df.time_ns,
                                                df.acorr,
                                                bounds=bounds)
-
             name = os.path.splitext(os.path.basename(file))[0]
-
             if tumbling:
                 axis = name.split("_")[-1]
                 D = {
                     'axis': axis, 'limit': limit
                 }
+
             else:
                 rid, aname = name.split("_")
                 rid = ResidueId(int(rid))
-
                 D = {
-                    'rName': chain[rid].name.str, 'aName': aname, 'rId': rid.serial, 'limit': limit
+                    'rName': ref_chain[rid].name.str, 'aName': aname, 'rId': rid.serial, 'limit': limit
                 }
 
             if with_constant:
@@ -122,10 +117,30 @@ def save_fit_auto_correlation(path_to_ref: str,
             )
 
             temp = pd.DataFrame(D, index=[0])
-
             tau_table = pd.concat([tau_table, temp])
         if tumbling:
             tau_table.sort_values(by=['axis'], inplace=True)
         else:
             tau_table.sort_values(by=['rId'], inplace=True)
         tau_table.to_csv(os.path.join(output_directory, 'tau_%d_exp.csv' % order), index=False)
+
+
+def save_fit_auto_correlation(path_to_ref: str,
+                              path_to_csv_acorr: str,
+                              output_directory: str,
+                              curve_bounds: List[List[List[Union[float, int]]]],
+                              ca_alignment=False,
+                              tumbling=False):
+
+    traj, ref = traj_from_dir(path_to_ref, first=1, last=1)
+    ref_chain = ref.asChains[0]
+    csv_files = sorted(glob.glob(os.path.join(path_to_csv_acorr, "*.csv")))
+    pipeline_fit_auto_correlation(ref_chain, csv_files, output_directory,
+                                  curve_bounds,ca_alignment, tumbling)
+
+    if ca_alignment:
+        path_to_csv_acorr = os.path.join(path_to_csv_acorr, "ca_alignment")
+        output_directory = os.path.join(output_directory, "ca_alignment")
+        os.makedirs(output_directory, exist_ok=True)
+        pipeline_fit_auto_correlation(ref_chain, csv_files, output_directory,
+                                  curve_bounds,ca_alignment, tumbling)

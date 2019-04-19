@@ -22,8 +22,11 @@ if __name__ == '__main__':
 
         ]
     }
+    ca_alignment = {"NH": False,
+                    "CH3": True}
     save_fit_auto_correlation(args.path_to_trajectory,
                               args.path_to_acorrs,
-                              args.output_directory,
-                              curve_bounds=bounds[args.vectors_group]
+                              args.output_directory, 
+                              curve_bounds=bounds[args.vectors_group],
+                              ca_alignment=ca_alignment[args.vectors_group]
                               )
