@@ -26,4 +26,3 @@ data/acorr/${FIRST_CH3_RESIDUES}.csv data/acorr/${LAST_CH3_RESIDUES}.csv:  ${SCR
 		--trajectory-length="${TRAJECTORY_LENGTH}" \
 		--path-to-trajectory="${TRAJECTORY_PATH}" \
 		--vectors-group=CH3
-

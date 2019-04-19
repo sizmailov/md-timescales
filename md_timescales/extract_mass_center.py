@@ -16,7 +16,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.volume_file and args.volume_file != "None":
-        volume = pd.read_csv(args.volume_file, sep=r"\s+").values[:, 1]
+        volume = pd.read_csv(args.volume_file, header=None, sep=r"\s+").values[:, 1]
         lattice_vectors = extract_lattice_vectors_rst7(os.path.join(args.path_to_trajectory, "1_build", "box.inpcrd"))
     else:
         assert args.lattice_rst7_file != "None"

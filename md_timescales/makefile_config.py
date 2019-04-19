@@ -42,7 +42,7 @@ if __name__ == "__main__":
             trajectory_path = p
             break
 
-    trajectory_length = len(glob.glob(os.path.join(trajectory_path,"5_run","*.dat")))
+    trajectory_length = len(glob.glob(os.path.join(trajectory_path,"5_run","run*.dat")))
 
     if args.n_residues:
         print(n_residues)
