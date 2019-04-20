@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import *
 import numpy as np
 from bionmr_utils.md import *
 import os
@@ -7,7 +7,14 @@ import glob
 from scipy.optimize import curve_fit
 
 
-def fit_limit(data):
+def fit_limit(data: List[Union[float, int]]) -> int:
+    """
+
+    :param data: array of function values
+    :return: index separates region with small
+             amount of negative derivatives
+    """
+
     def moving_average(data_set, periods=3):
         weights = np.ones(periods) / periods
         return np.convolve(data_set, weights, mode='valid')
@@ -20,18 +27,34 @@ def fit_limit(data):
     return index
 
 
-def __multi_exp_f(x, A, TAU, C):
+def __multi_exp_f(x: Union[float, int],
+                  A: List[Union[float, int]],
+                  TAU: List[Union[float, int]],
+                  C: Union[float, int]) -> float:
+    """
+    :param x: argument of some exponential functions composition
+    :param A: array of amplitudes
+    :param TAU: array of time constants
+    :param C: free element
+    :return: sum exponential functions composition
+    """
     return np.sum(
         (a * np.exp(-x / tau)) for a, tau in zip(A, TAU)
     ) + C
 
 
-def multi_exp(x, *args):
-    TAU = args[1::2]
+def multi_exp(x: Union[float, int],
+              *args):
+    """
+    :param x: argument of some exponential functions composition
+    :param args: array of amplitudes and time constants
+    :return: callable __multi_exp
+    """
+    TAU = list(args[1::2])
 
     if len(args) % 2 == 0:
         C = 0
-        A = args[::2]
+        A = list(args[::2])
     else:
         C = args[-1]
         A = args[:-1:2]
@@ -39,7 +62,10 @@ def multi_exp(x, *args):
     return __multi_exp_f(x, A, TAU, C)
 
 
-def fit_auto_correlation(time: List[float], acorr: List[float], bounds) -> Tuple[int, List[float]]:
+def fit_auto_correlation(time: List[float],
+                         acorr: List[float],
+                         bounds: List[List[List[Union[float, int]]]]) \
+        -> Tuple[int, Union[np.ndarray, Iterable, int, float]]:
     """
     Fit input data with :math:`\sum_n A_n \exp(-t/\\tau_n) + const`
 
@@ -71,13 +97,22 @@ def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[fl
 
 
 def get_fit_auto_correlation(ref_chain,
-                              csv_files,
-                              output_directory: str,
-                              curve_bounds: List[List[List[Union[float, int]]]],
-                              ca_alignment=False,
-                              tumbling=False
-                              ):
+                             csv_files,
+                             output_directory: str,
+                             curve_bounds: List[List[List[Union[float, int]]]],
+                             ca_alignment: bool = False,
+                             tumbling: bool = False
+                             ) -> None:
+    """
 
+    :param ref_chain: chain of reference
+    :param csv_files:  two-column .csv files [time_ns, acorr]
+    :param output_directory: output directory for 
+           a particular fit function (e.g. tau-2-exp.csv)
+    :param curve_bounds: restriction of function parameters
+    :param ca_alignment: flag of aligment frames by Ca atoms
+    :param tumbling: flag of tumbling calculation
+    """
     for bounds in curve_bounds:
         with_constant = len(bounds[0]) % 2 == 1
         order = (len(bounds[0]) + 1) // 2
@@ -129,18 +164,28 @@ def save_fit_auto_correlation(path_to_ref: str,
                               path_to_csv_acorr: str,
                               output_directory: str,
                               curve_bounds: List[List[List[Union[float, int]]]],
-                              ca_alignment=False,
-                              tumbling=False):
+                              ca_alignment: bool = False,
+                              tumbling: bool = False
+                              ) -> None:
+    """
 
+    :param path_to_ref: path to reference
+    :param path_to_csv_acorr: path to two-column .csv files [time_ns, acorr]
+    :param output_directory: output directory for 
+           a particular fit function (e.g. tau-2-exp.csv)
+    :param curve_bounds: restriction of function parameters
+    :param ca_alignment: flag of aligment frames by Ca atoms
+    :param tumbling: flag of tumbling calculation
+    """
     traj, ref = traj_from_dir(path_to_ref, first=1, last=1)
     ref_chain = ref.asChains[0]
     csv_files = sorted(glob.glob(os.path.join(path_to_csv_acorr, "*.csv")))
     get_fit_auto_correlation(ref_chain, csv_files, output_directory,
-                                  curve_bounds,ca_alignment, tumbling)
+                             curve_bounds, ca_alignment, tumbling)
 
     if ca_alignment:
         path_to_csv_acorr = os.path.join(path_to_csv_acorr, "ca_alignment")
         output_directory = os.path.join(output_directory, "ca_alignment")
         os.makedirs(output_directory, exist_ok=True)
         get_fit_auto_correlation(ref_chain, csv_files, output_directory,
-                                  curve_bounds,ca_alignment, tumbling)
+                                 curve_bounds, ca_alignment, tumbling)
