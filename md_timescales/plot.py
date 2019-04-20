@@ -1,4 +1,5 @@
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -6,7 +7,9 @@ import numpy as np
 import glob
 import os
 from matplotlib.backends.backend_pdf import PdfPages
+from typing import *
 from .fit import __multi_exp_f
+
 
 def __get_autocorr_graph_label(fit_line):
     amplitude = fit_line.filter(like='-a')
@@ -46,16 +49,15 @@ def settings_plot(graph_label):
 
 
 def plot_figure_autocorr(time, fit_line, acorr):
-
     amplitude = fit_line.filter(like='-a')
     tau = fit_line.filter(like='-tau')
     if fit_line['aName'][0] == "C":
-        constant=fit_line['constant']
+        constant = fit_line['constant']
     else:
-        constant=0
+        constant = 0
     order = len(amplitude)
     rid = fit_line["rId"]
-    rname = fit_line["rName"] 
+    rname = fit_line["rName"]
     aname = fit_line["aName"]
     limit = fit_line["limit"]
 
@@ -75,13 +77,17 @@ def plot_figure_autocorr(time, fit_line, acorr):
     return fig, ax
 
 
-def get_plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory):
+def get_plot_acorr_fit(path_to_fit_csv: str,
+                       path_to_csv_acorr: str,
+                       output_directory: str) -> None:
     """
-    Plot one pdf with a particular fit function (e.g. NH-acorr-2-exp.pdf)
-     - [ ] Show acorr data
-     - [ ] Show fit curve
-     - [ ] Show fit parameters
-     - [ ] Denote fit region by vertical line
+    Plot one pdf with a particular fit function (e.g. tau-2-exp.pdf)
+
+    :param path_to_fit_csv: path to particular fit
+           function values (e.g. tau-2-exp.csv) files
+    :param path_to_csv_acorr: path to two-column .csv files [time_ns, acorr]
+    :param output_directory: path to fit pdf with
+           a particular fit function (e.g. tau-2-exp.pdf)
     """
     exp_order = {2: "tau_2_exp", 3: "tau_3_exp", 4: "tau_4_exp"}
     for order in range(2, 5):
@@ -89,13 +95,26 @@ def get_plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory):
             csv_fit = os.path.join(path_to_fit_csv, exp_order[order] + ".csv")
             fit = pd.read_csv(csv_fit)
             for _, fit_line in fit.iterrows():
-                file = "{}/{:02d}_{}.csv".format(path_to_csv_acorr,fit_line["rId"],fit_line["aName"])
+                file = "{}/{:02d}_{}.csv".format(path_to_csv_acorr, fit_line["rId"], fit_line["aName"])
                 df = pd.read_csv(file)
                 fig, ax = plot_figure_autocorr(df.time_ns, fit_line, df.acorr)
                 pdf.savefig(fig)
                 plt.close(fig)
 
-def plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory, ca_alignment=False):
+
+def plot_acorr_fit(path_to_fit_csv: str,
+                   path_to_csv_acorr: str,
+                   output_directory: str,
+                   ca_alignment: bool = False) -> None:
+    """
+
+    :param path_to_fit_csv: path to particular fit
+           function values (e.g. tau-2-exp.csv) files
+    :param path_to_csv_acorr: path to two-column .csv files [time_ns, acorr]
+    :param output_directory: path to fit pdf with
+           a particular fit function (e.g. tau-2-exp.pdf)
+    :param ca_alignment: flag of aligment frames by Ca atoms
+    """
     get_plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory)
     if ca_alignment:
         path_to_fit_csv = os.path.join(path_to_fit_csv, "ca_alignment")
@@ -103,6 +122,3 @@ def plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory, ca_alig
         output_directory = os.path.join(output_directory, "ca_alignment")
         os.makedirs(output_directory, exist_ok=True)
         get_plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, output_directory)
-
-
-
