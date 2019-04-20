@@ -20,6 +20,7 @@ if __name__ == '__main__':
     extract_autocorr(args.path_to_trajectory,
                      args.output_directory,
                      trajectory_length=args.trajectory_length,
-                     get_vectors=get_vectors[args.vectors_group], ca_alignment=ca_alignment[args.vectors_group]
+                     get_vectors=get_vectors[args.vectors_group], 
+                     ca_alignment=ca_alignment[args.vectors_group]
                      )
 
