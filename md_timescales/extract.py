@@ -119,7 +119,6 @@ def calc_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
     ref = trajectory[0]
     ref_alignment_atoms = ref.asAtoms.filter(alignment_selector)
     alignment_atoms = None
-    frame_atoms = None
     CH3S = None
     vectors = None
     for frame in tqdm(trajectory):
@@ -127,7 +126,7 @@ def calc_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
             if alignment_atoms is None:
                 alignment_atoms = frame.asAtoms.filter(alignment_selector)
                 frame_atoms = frame.asAtoms
-                frame_atoms.transform(alignment_atoms.alignment_to(ref_alignment_atoms))
+            frame_atoms.transform(alignment_atoms.alignment_to(ref_alignment_atoms))
         if CH3S is None:
             CH3S = {}
             vectors = {}
