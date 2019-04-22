@@ -180,11 +180,12 @@ def save_fit_auto_correlation(path_to_ref: str,
     ref_chain = ref.asChains[0]
     csv_files = sorted(glob.glob(os.path.join(path_to_csv_acorr, "*.csv")))
     get_fit_auto_correlation(ref_chain, csv_files, output_directory,
-                             curve_bounds, ca_alignment, tumbling)
+                             curve_bounds, tumbling)
 
     if ca_alignment:
         path_to_csv_acorr = os.path.join(path_to_csv_acorr, "ca_alignment")
         output_directory = os.path.join(output_directory, "ca_alignment")
         os.makedirs(output_directory, exist_ok=True)
+        csv_files = sorted(glob.glob(os.path.join(path_to_csv_acorr, "*.csv")))
         get_fit_auto_correlation(ref_chain, csv_files, output_directory,
-                                 curve_bounds, ca_alignment, tumbling)
+                                 curve_bounds, tumbling)
