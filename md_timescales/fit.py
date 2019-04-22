@@ -61,6 +61,18 @@ def multi_exp(x: Union[float, int],
 
     return __multi_exp_f(x, A, TAU, C)
 
+def mult_exp_sum_1(x, *args):
+    TAU = args[0::2]
+
+    if len(args) % 2 == 1:
+        C = 0
+        A = args[1:-1:2]
+    else:
+        C = args[-1]
+        A = args[1:-1:2]
+    A0 = 1 - sum(A) - C
+    return __multi_exp_f(x, [A0] + list(A), TAU, C)
+
 
 def fit_auto_correlation(time: List[float],
                          acorr: List[float],
@@ -68,7 +80,6 @@ def fit_auto_correlation(time: List[float],
         -> Tuple[int, Union[np.ndarray, Iterable, int, float]]:
     """
     Fit input data with :math:`\sum_n A_n \exp(-t/\\tau_n) + const`
-
     :param time: time data series
     :param acorr: auto-correlation data series
     :param bounds: curve parameters bounds
@@ -76,13 +87,23 @@ def fit_auto_correlation(time: List[float],
     """
 
     limit = fit_limit(acorr)
-    p0 = np.mean(bounds, axis=0)
-    popt, pcov = curve_fit(multi_exp,
+    p0 = np.mean(bounds, axis=0)[1:]
+
+    args, pcov = curve_fit(mult_exp_sum_1,
                            time[:limit],
                            acorr[:limit],
                            p0=p0,
-                           bounds=bounds)
-    return limit, popt
+                           bounds=np.array(bounds)[:, 1:])
+
+    if len(args) % 2 == 1:
+        C = 0
+        A = args[1:-1:2]
+    else:
+        C = args[-1]
+        A = args[1:-1:2]
+    A0 = 1 - sum(A) - C
+
+    return limit, [A0] + list(args)
 
 
 def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[float]:
