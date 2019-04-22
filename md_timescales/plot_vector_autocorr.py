@@ -8,7 +8,7 @@ if __name__ == '__main__':
     parser.add_argument('--path-to-fit', required=True)
     parser.add_argument('--path-to-acorrs', required=True)
     parser.add_argument('--output-directory', default="./")
-    parser.add_argument('--vectors-group', choices=["NH", "CH3"], type=str)
+    parser.add_argument('--vectors-group', choices=["NH", "CH3"], type=str, required=True)
     args = parser.parse_args()
 
     ca_alignment = {"NH": False,

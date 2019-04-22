@@ -12,6 +12,7 @@ figures/tau_2_exp.pdf figures/tau_4_exp.pdf: ${SCRIPT_DIR}/plot_vector_autocorr.
 		--path-to-fit=data/fit/ \
 		--path-to-acorrs=data/acorr/ \
 		--output-directory=figures \
+		--vectors-group=NH
 
 
 
