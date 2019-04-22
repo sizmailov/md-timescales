@@ -12,7 +12,7 @@ def extract_time_step_ns(path_to_trajectory: str) -> float:
     Extract time step from trajectory
 
     :param path_to_trajectory: path to directory
-    :return time between trajectory frames
+    :return time between trajectory frames in nanoseconds
 
     """
     path_to_firt_run_in = os.path.join(path_to_trajectory, "5_run", "run00001.in")
@@ -31,7 +31,7 @@ def atom_name_mass_map(atom: Atom) -> float:
     """
     Mass map for H, C, O, N, P, S atoms
 
-    :param atom 
+    :param atom: an atom
     :return atomic weight
 
     """
@@ -55,7 +55,7 @@ def extract_lattice_vectors_rst7(lattice_path: str) -> LatticeVectors:
 
 
 def extract_mass_center(traj: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice],
-                        dt: float,
+                        dt_ns: float,
                         lattice_vectors: LatticeVectors,
                         volume: np.array = None,
                         atom_selector: Callable[[Atom], bool] = lambda _: True,
@@ -64,13 +64,14 @@ def extract_mass_center(traj: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
     """
     Extract mass center
 
-    :param traj: trajectory returns Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice]
-    :param dt: time between trajectory frames
+    :param traj: trajectory or trajectory slice
+    :param dt_ns: time between trajectory frames in nanoseconds
     :param lattice_vectors: translational vectors for periodic boundary conditions
     :param volume: cell volume along the trajectory. Must match *whole* trajectory in length.
                    If None no lattice_vectors rescale is performed
     :param atom_selector: selector for atom
     :param atom_mass_map: function to determinate mass of atom
+    :returns: (np.array of time points in nanoseconds, VectorXYZ of corresponding XYZ)
 
     """
     time = []
@@ -93,7 +94,7 @@ def extract_mass_center(traj: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
         if prev_cm:
             current_cm += bsf.find_best_shift(prev_cm, current_cm)[1]
 
-        time.append(frame.index * dt)
+        time.append(frame.index * dt_ns)
         mass_centers.append(current_cm)
 
         prev_cm = current_cm
@@ -104,15 +105,15 @@ def extract_mass_center(traj: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
 
 
 def calc_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice],
-                 ca_alignment: bool,
-                 get_vectors: Callable[[Frame], List[Tuple[Atom, Atom]]]) -> Dict[tuple, float]:
+                  ca_alignment: bool,
+                  get_vectors: Callable[[Frame], List[Tuple[Atom, Atom]]]) -> Dict[tuple, float]:
     """
-    Get autocorrelation from trajectory
+    Get auto-correlation from trajectory
 
-    :param trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice]
+    :param trajectory:
     :param ca_alignment: flag of aligment frames by Ca atoms
     :param get_vectors: function to determinate tracked vector
-    :return dict of (rid, aname): autocorrelation
+    :return dict of (rid, aname): auto-correlation
     """
     ref = trajectory[0]
     ref_ca = ref.asAtoms.filter(aName == "CA")
@@ -142,36 +143,37 @@ def calc_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
 
 
 def save_autocorr(autocorr: dict,
-                  time_step_ns: float,
+                  dt_ns: float,
                   output_directory: str) -> None:
     """
 
-    :param autocorr: returns dict of (rid, aname): autocorrelation
-    :param time_step_ns: returns time between trajectory frames
+    :param autocorr: dict of (rid, aname): autocorrelation
+    :param dt_ns: time between trajectory frames in nanoseconds
     :param output_directory: output directory for two-column .csv files [time_ns, acorr]
 
     """
     for (rid, aname), acorr in autocorr.items():
         outname = "%02d_%s.csv" % (rid.serial, aname,)
-        pd.DataFrame(np.array([np.linspace(0, len(acorr) * time_step_ns, len(acorr), endpoint=False), acorr]).T,
+        pd.DataFrame(np.array([np.linspace(0, len(acorr) * dt_ns, len(acorr), endpoint=False), acorr]).T,
                      columns=["time_ns", "acorr"]).to_csv(os.path.join(output_directory, outname), index=False)
 
 
 def get_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice],
-                  time_step_ns: float,
-                  output_directory: str,
-                  get_vectors: Callable[[Frame], List[Tuple[Atom, Atom]]],
-                  ca_alignment: bool) -> None:
+                 dt_ns: float,
+                 output_directory: str,
+                 get_vectors: Callable[[Frame], List[Tuple[Atom, Atom]]],
+                 ca_alignment: bool) -> None:
     """
 
+    :param trajectory:
+    :param dt_ns: time between trajectory frames in nanoseconds
     :param get_vectors: returns list of atom pairs of interest
-    :param path_to_trajectory: path to directory
-    :param trajectory_length: number of .dat files to process
     :param output_directory: output directory for two-column .csv files [time_ns, acorr]
+    :param ca_alignment: flag of alignment frames by Ca atoms
 
     """
     autocorr = calc_autocorr(trajectory, ca_alignment, get_vectors=get_vectors)
-    save_autocorr(autocorr, time_step_ns, output_directory)
+    save_autocorr(autocorr, dt_ns, output_directory)
 
 
 def extract_autocorr(path_to_trajectory: str,
@@ -181,11 +183,11 @@ def extract_autocorr(path_to_trajectory: str,
                      ca_alignment: bool) -> None:
     """
 
-    :param get_vectors: returns list of atom pairs of interest
     :param path_to_trajectory:
+    :param get_vectors: returns list of atom pairs of interest
+    :param output_directory: directory to write auto-correlation functions
     :param trajectory_length: number of .dat files to process
-    :param ca_alignment: flag of aligment frames by Ca atoms
-    :param get_vectors: function to determinate tracked vector
+    :param ca_alignment: flag of alignment frames by Ca atoms
     """
     trajectory, ref = traj_from_dir(path_to_trajectory, first=1, last=trajectory_length)
     time_step_ns = extract_time_step_ns(path_to_trajectory)
@@ -200,7 +202,7 @@ def get_methyl_vectors(frame: Frame) -> List[Tuple[Atom, Atom]]:
     """
 
     :param frame: Frame
-    :return: List[Tuple(Atom,Atom)]
+    :return: list of all methyl C-H atom pairs of given frame.
     """
     CH3_dict = {('ALA', 'CB'): ['CB', 'HB1'],
                 ('VAL', 'CG1'): ['CG1', 'HG11'],
@@ -228,7 +230,7 @@ def get_NH_vectors(frame: Frame) -> List[Tuple[Atom, Atom]]:
     """
 
     :param frame: Frame
-    :return: List[Tuple(Atom,Atom)]
+    :return: list of all backbone atom pairs of given frame.
     """
 
     atom_pairs = []
