@@ -96,11 +96,10 @@ def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[fl
     ...
 
 
-def get_fit_auto_correlation(ref_chain,
-                             csv_files,
+def get_fit_auto_correlation(ref_chain:Chain,
+                             csv_files:List[str],
                              output_directory: str,
                              curve_bounds: List[List[List[Union[float, int]]]],
-                             ca_alignment: bool = False,
                              tumbling: bool = False
                              ) -> None:
     """
