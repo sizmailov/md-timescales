@@ -105,26 +105,29 @@ def extract_mass_center(traj: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
 
 
 def calc_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySlice],
-                  ca_alignment: bool,
-                  get_vectors: Callable[[Frame], List[Tuple[Atom, Atom]]]) -> Dict[tuple, float]:
+                  get_vectors: Callable[[Frame], List[Tuple[Atom, Atom]]],
+                  alignment_selector: Optional[Callable[[Atom], bool]] = None
+                  ) -> Dict[tuple, float]:
     """
     Get auto-correlation from trajectory
 
     :param trajectory:
-    :param ca_alignment: flag of aligment frames by Ca atoms
     :param get_vectors: function to determinate tracked vector
+    :param alignment_selector: Optional atom selector for frame alignment
     :return dict of (rid, aname): auto-correlation
     """
     ref = trajectory[0]
-    ref_ca = ref.asAtoms.filter(aName == "CA")
-    frame_ca = None
+    ref_alignment_atoms = ref.asAtoms.filter(alignment_selector)
+    alignment_atoms = None
+    frame_atoms = None
     CH3S = None
     vectors = None
     for frame in tqdm(trajectory):
-        if ca_alignment:
-            if frame_ca is None:
-                frame_ca = frame.asAtoms.filter(aName == "CA")
-                frame.asAtoms.transform(frame_ca.alignment_to(ref_ca))
+        if alignment_selector is not None:
+            if alignment_atoms is None:
+                alignment_atoms = frame.asAtoms.filter(alignment_selector)
+                frame_atoms = frame.asAtoms
+                frame_atoms.transform(alignment_atoms.alignment_to(ref_alignment_atoms))
         if CH3S is None:
             CH3S = {}
             vectors = {}
@@ -162,17 +165,20 @@ def get_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectorySl
                  dt_ns: float,
                  output_directory: str,
                  get_vectors: Callable[[Frame], List[Tuple[Atom, Atom]]],
-                 ca_alignment: bool) -> None:
+                 alignment_selector: Optional[Callable[[Atom], bool]] = None
+                 ) -> None:
     """
 
     :param trajectory:
     :param dt_ns: time between trajectory frames in nanoseconds
     :param get_vectors: returns list of atom pairs of interest
     :param output_directory: output directory for two-column .csv files [time_ns, acorr]
-    :param ca_alignment: flag of alignment frames by Ca atoms
+    :param alignment_selector: flag of alignment frames by Ca atoms
 
     """
-    autocorr = calc_autocorr(trajectory, ca_alignment, get_vectors=get_vectors)
+    autocorr = calc_autocorr(trajectory,
+                             get_vectors=get_vectors,
+                             alignment_selector=alignment_selector)
     save_autocorr(autocorr, dt_ns, output_directory)
 
 
@@ -191,11 +197,11 @@ def extract_autocorr(path_to_trajectory: str,
     """
     trajectory, ref = traj_from_dir(path_to_trajectory, first=1, last=trajectory_length)
     time_step_ns = extract_time_step_ns(path_to_trajectory)
-    get_autocorr(trajectory, time_step_ns, output_directory, get_vectors, ca_alignment=False)
+    get_autocorr(trajectory, time_step_ns, output_directory, get_vectors, alignment_selector=None)
     if ca_alignment:
         output_directory = os.path.join(output_directory, "ca_alignment")
         os.makedirs(output_directory, exist_ok=True)
-        get_autocorr(trajectory, time_step_ns, output_directory, get_vectors, ca_alignment=True)
+        get_autocorr(trajectory, time_step_ns, output_directory, get_vectors, alignment_selector=(aName=="CA"))
 
 
 def get_methyl_vectors(frame: Frame) -> List[Tuple[Atom, Atom]]:
