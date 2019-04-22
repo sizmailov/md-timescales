@@ -116,9 +116,10 @@ def calc_autocorr(trajectory: Union[Trajectory, pyxmolpp2.trajectory.TrajectoryS
     :param alignment_selector: Optional atom selector for frame alignment
     :return dict of (rid, aname): auto-correlation
     """
-    ref = trajectory[0]
-    ref_alignment_atoms = ref.asAtoms.filter(alignment_selector)
-    alignment_atoms = None
+    if alignment_selector is not None:
+        ref = trajectory[0]
+        ref_alignment_atoms = ref.asAtoms.filter(alignment_selector)
+        alignment_atoms = None
     CH3S = None
     vectors = None
     for frame in tqdm(trajectory):
