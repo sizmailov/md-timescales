@@ -144,6 +144,10 @@ def get_fit_auto_correlation(ref_chain: Chain,
             limit, popt = fit_auto_correlation(df.time_ns,
                                                df.acorr,
                                                bounds=bounds)
+
+            assert np.isclose(np.sum(popt[::2]), 1.0), "Sum of exponential amplitudes != 1 (sum Ai = {:.3f})".format(
+                np.sum(popt[::2]))
+
             name = os.path.splitext(os.path.basename(file))[0]
             if tumbling:
                 axis = name.split("_")[-1]
