@@ -61,6 +61,7 @@ def multi_exp(x: Union[float, int],
 
     return __multi_exp_f(x, A, TAU, C)
 
+
 def mult_exp_sum_1(x, *args):
     TAU = args[0::2]
 
@@ -117,8 +118,8 @@ def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[fl
     ...
 
 
-def get_fit_auto_correlation(ref_chain:Chain,
-                             csv_files:List[str],
+def get_fit_auto_correlation(ref_chain: Chain,
+                             csv_files: List[str],
                              output_directory: str,
                              curve_bounds: List[List[List[Union[float, int]]]],
                              tumbling: bool = False
