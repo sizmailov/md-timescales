@@ -61,6 +61,7 @@ def multi_exp(x: Union[float, int],
 
     return __multi_exp_f(x, A, TAU, C)
 
+
 def generate_bounds(path_to_csv_acorr: str, with_constant: bool = False):
     """
     Function finds boundaries for fit parametrs of autocorrelation function 
@@ -105,6 +106,7 @@ def generate_bounds(path_to_csv_acorr: str, with_constant: bool = False):
     bounds = (bounds_2, bounds_3, bounds_4)
     return bounds
 
+
 def fit_auto_correlation(time: List[float],
                          acorr: List[float],
                          bounds: List[List[List[Union[float, int]]]]) \
@@ -139,8 +141,8 @@ def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[fl
     ...
 
 
-def get_fit_auto_correlation(ref_chain:Chain,
-                             csv_files:List[str],
+def get_fit_auto_correlation(ref_chain: Chain,
+                             csv_files: List[str],
                              output_directory: str,
                              with_constant: bool = False,
                              tumbling: bool = False,
@@ -232,4 +234,4 @@ def save_fit_auto_correlation(path_to_ref: str,
         os.makedirs(output_directory, exist_ok=True)
         csv_files = sorted(glob.glob(os.path.join(path_to_csv_acorr, "*.csv")))
         get_fit_auto_correlation(ref_chain, csv_files, output_directory,
-                                  with_constant, tumbling)
+                                 with_constant, tumbling)

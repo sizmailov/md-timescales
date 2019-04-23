@@ -10,12 +10,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     with_constant = {"NH": False,
-                    "CH3": True}
+                     "CH3": True}
     ca_alignment = {"NH": False,
                     "CH3": True}
     save_fit_auto_correlation(args.path_to_trajectory,
                               args.path_to_acorrs,
-                              args.output_directory, 
+                              args.output_directory,
                               with_constant=with_constant[args.vectors_group],
                               ca_alignment=ca_alignment[args.vectors_group]
                               )
