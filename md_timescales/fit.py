@@ -112,7 +112,10 @@ def decorated_fit_auto_correlation(time: List[float],
                                     np.array(multi_exp(time, *popt))) ** 2))
             popt_all.append(popt)
         except RuntimeError:
-            print("Fit error n={}, scale={}".format(len(bounds)//2, scale))
+            print("Fit error n={}, scale={}".format(len(bounds[0])//2, scale))
+
+        scale_times(bounds[0], 1.0/scale)
+        scale_times(bounds[1], 1.0/scale)
 
     min_ind_r_square = np.argmin(R_square)
 
