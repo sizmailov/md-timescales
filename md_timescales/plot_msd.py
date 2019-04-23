@@ -3,6 +3,7 @@ import matplotlib
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from md_timescales.plot import add_relpath_to_top_corner
 import pandas as pd
 import numpy as np
 import os
@@ -13,7 +14,9 @@ def get_translation_fit(path_to_msd, path_to_fit, output_directory):
     assert os.path.isfile(path_to_fit)
     df_msd = pd.read_csv(path_to_msd)
 
-    fig = plt.figure()
+    fig = plt.figure()  # type:plt.Figure
+    add_relpath_to_top_corner(fig)
+
     ax = fig.add_subplot(111)  # type: plt.Axes
     ax.set_xlabel('time, ns', fontsize=13)
     ax.set_ylabel('msd, A^2', fontsize=13)

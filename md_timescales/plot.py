@@ -26,6 +26,15 @@ def __get_autocorr_graph_label(fit_line):
     return graph_label
 
 
+def add_relpath_to_top_corner(figure: plt.Figure):
+    big_axis = figure.add_axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
+
+    big_axis.text(0.99, 0.99,
+                  os.path.relpath(os.path.abspath(os.curdir), os.path.expanduser("~/bioinf/handling")),
+                  color="#CCCCCC",
+                  horizontalalignment='right',
+                  verticalalignment='top')
+
 def settings_plot(graph_label):
     left, width = .40, .54
     bottom, height = .40, .54
@@ -55,7 +64,7 @@ def plot_figure_autocorr(time, fit_line, acorr):
         constant=0
     order = len(amplitude)
     rid = fit_line["rId"]
-    rname = fit_line["rName"] 
+    rname = fit_line["rName"]
     aname = fit_line["aName"]
     limit = fit_line["limit"]
 
