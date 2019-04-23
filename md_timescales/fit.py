@@ -83,35 +83,37 @@ def fit_auto_correlation(time: List[float],
                            bounds=bounds)
     return popt
 
-def decorated_fit_auto_correlation(time, acorr: List[float],
-                         bounds: List[List[List[Union[float, int]]]]) \
+
+def decorated_fit_auto_correlation(time: List[float],
+                                   acorr: List[float],
+                                   bounds: List[List[List[Union[float, int]]]]) \
         -> Tuple[int, Union[np.ndarray, Iterable, int, float]]:
 
+    def scale_times(args, scale):
+        args[1::2] = np.array(args[1::2]) * scale
+
+    scales = [1, 2, 3]
+
     limit = fit_limit(acorr)
-    time_limit = time[:limit]
-    acorr_limit = time[:limit]
-    R_square = [0, 0 , 0]
-    popt_all = [0, 0, 0]
-    for scaling_ind in range(1,4):
-        with_constant = len(bounds[0]) % 2 == 1
-        bounds[0][1::2] = np.array(bounds[0][1::2]) * scaling_ind
-        bounds[1][1::2] = np.array(bounds[1][1::2]) * scaling_ind
+
+    time = time[:limit]
+    acorr = acorr[:limit]
+
+    R_square = []
+    popt_all = []
+
+    for i, scale in enumerate(scales):
+        scale_times(bounds[0], scale)
+        scale_times(bounds[1], scale)
         popt = fit_auto_correlation(time, acorr, bounds)
-        if with_constant:
-            C = popt[-1]
-            popt = popt[:-1]
-        else:
-            C=0
-        amplitudes = popt[::2]
-        taus = popt[1::2]
-        R_square[scaling_ind - 1] = np.sum((np.array(acorr_limit) - 
-                                    np.array(__multi_exp_f(time_limit, amplitudes, taus, C))) ** 2)
-        popt_all[scaling_ind - 1] = popt
+
+        R_square.append(np.sum((np.array(acorr) -
+                                np.array(multi_exp(time, popt))) ** 2))
+        popt_all.append(popt)
+
     min_ind_r_square = np.argmin(R_square)
+
     return limit, popt_all[min_ind_r_square]
-
-        
-
 
 
 def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[float]:
@@ -125,8 +127,8 @@ def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[fl
     ...
 
 
-def get_fit_auto_correlation(ref_chain:Chain,
-                             csv_files:List[str],
+def get_fit_auto_correlation(ref_chain: Chain,
+                             csv_files: List[str],
                              output_directory: str,
                              curve_bounds: List[List[List[Union[float, int]]]],
                              tumbling: bool = False
@@ -149,8 +151,8 @@ def get_fit_auto_correlation(ref_chain:Chain,
 
             df = pd.read_csv(file)
             limit, popt = decorated_fit_auto_correlation(df.time_ns,
-                                               df.acorr,
-                                               bounds=bounds)
+                                                         df.acorr,
+                                                         bounds=bounds)
             name = os.path.splitext(os.path.basename(file))[0]
             if tumbling:
                 axis = name.split("_")[-1]
