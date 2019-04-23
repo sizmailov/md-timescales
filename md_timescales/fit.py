@@ -84,6 +84,37 @@ def fit_auto_correlation(time: List[float],
                            bounds=bounds)
     return limit, popt
 
+def decorated_fit_auto_correlation(time, acorr: List[float],
+                         bounds: List[List[List[Union[float, int]]]]) \
+        -> Tuple[int, Union[np.ndarray, Iterable, int, float]]:
+
+    R_square = [0, 0 , 0]
+    limit_all = [0, 0 ,0]
+    popt_all = [0, 0, 0]
+    for scaling_ind in range(1,4):
+        with_constant = len(bounds[0]) % 2 == 1
+        bounds[0][1::2] = np.array(bounds[0][1::2]) * scaling_ind
+        bounds[1][1::2] = np.array(bounds[1][1::2]) * scaling_ind
+        limit, popt = fit_auto_correlation(time, acorr, bounds)
+        if with_constant:
+            C = popt[-1]
+            popt = popt[:-1]
+        else:
+            C=0
+        time_limit = time[:limit]
+        amplitudes = popt[::2]
+        taus = popt[1::2]
+        R_square[scaling_ind - 1] = np.sum((np.array(acorr[:limit]) - 
+                                    np.array(__multi_exp_f(time_limit, amplitudes, taus, C))) ** 2)
+        limit_all[scaling_ind - 1] = limit
+        popt_all[scaling_ind - 1] = popt
+    # print(R_square)
+    min_ind_r_square = np.argmin(R_square)
+    return limit_all[min_ind_r_square], popt_all[min_ind_r_square]
+
+        
+
+
 
 def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[float]:
     """
@@ -119,7 +150,7 @@ def get_fit_auto_correlation(ref_chain:Chain,
         for file in csv_files:
 
             df = pd.read_csv(file)
-            limit, popt = fit_auto_correlation(df.time_ns,
+            limit, popt = decorated_fit_auto_correlation(df.time_ns,
                                                df.acorr,
                                                bounds=bounds)
             name = os.path.splitext(os.path.basename(file))[0]
@@ -139,7 +170,6 @@ def get_fit_auto_correlation(ref_chain:Chain,
             if with_constant:
                 D.update({"constant": popt[-1]})
                 popt = popt[:-1]
-
             amplitudes = popt[::2]
             taus = popt[1::2]
 
