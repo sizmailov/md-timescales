@@ -8,6 +8,7 @@ import numpy as np
 import glob
 import os
 from matplotlib.backends.backend_pdf import PdfPages
+from md_timescales.plot import add_relpath_to_top_corner
 
 
 def mono_exp(x, a1, tau1):
@@ -52,6 +53,7 @@ def plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, path_to_output_pdf):
             top = bottom + height
 
             fig = plt.figure()
+            add_relpath_to_top_corner(fig)
             ax = fig.add_subplot(111)
             ax.text(right, top, graph_label,
                     horizontalalignment='right',
@@ -68,16 +70,14 @@ def plot_acorr_fit(path_to_fit_csv, path_to_csv_acorr, path_to_output_pdf):
             ax.plot(df.time_ns, mono_exp(df.time_ns, **popt))
             ax.axvline(x=df.time_ns[limit], color='g', linestyle='--', label="fit limit %s" % (limit))
             ax.grid(True)
-            # ax.set_legend(("inertia_tensor autocorrelation", "fit , loc='upper right')
             pdf.savefig()
             plt.close()
 
 
 if __name__ == "__main__":
-    # -f_csv "/home/legosta/bioinf/scripts/md-timescales/md_timescales" -a_csv "/home/legosta/bioinf/scripts/data/acorr"
     parser = argparse.ArgumentParser(description="plot inertia_tensor autocorrelation")
     parser.add_argument('-f_csv', '--path-to-fit', required=True)
     parser.add_argument('-a_csv', '--path-to-acorrs', required=True)
     parser.add_argument('-o', '--output-directory', default=os.getcwd())
     args = parser.parse_args()
-plot_acorr_fit(args.path_to_fit, args.path_to_acorrs, args.output_directory)
+    plot_acorr_fit(args.path_to_fit, args.path_to_acorrs, args.output_directory)

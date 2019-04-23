@@ -107,6 +107,7 @@ def get_plot_acorr_fit(path_to_fit_csv: str,
                 file = "{}/{:02d}_{}.csv".format(path_to_csv_acorr, fit_line["rId"], fit_line["aName"])
                 df = pd.read_csv(file)
                 fig, ax = plot_figure_autocorr(df.time_ns, fit_line, df.acorr)
+                add_relpath_to_top_corner(fig)
                 pdf.savefig(fig)
                 plt.close(fig)
 
