@@ -81,18 +81,18 @@ def fit_auto_correlation(time: List[float],
         -> Tuple[int, Union[np.ndarray, Iterable, int, float]]:
     """
     Fit input data with :math:`\sum_n A_n \exp(-t/\\tau_n) + const`
+
     :param time: time data series
     :param acorr: auto-correlation data series
     :param bounds: curve parameters bounds
     :return: Fit curve parameters
     """
 
-    limit = fit_limit(acorr)
     p0 = np.mean(bounds, axis=0)[1:]
 
     args, pcov = curve_fit(mult_exp_sum_1,
-                           time[:limit],
-                           acorr[:limit],
+                           time,
+                           acorr,
                            p0=p0,
                            bounds=np.array(bounds)[:, 1:])
 
@@ -104,7 +104,45 @@ def fit_auto_correlation(time: List[float],
         A = args[1:-1:2]
     A0 = 1 - sum(A) - C
 
-    return limit, [A0] + list(args)
+    return [A0] + list(args)
+
+
+def decorated_fit_auto_correlation(time: List[float],
+                                   acorr: List[float],
+                                   bounds: List[List[List[Union[float, int]]]]) \
+        -> Tuple[int, Union[np.ndarray, Iterable, int, float]]:
+
+    def scale_times(args, scale):
+        args[1::2] = np.array(args[1::2]) * scale
+
+    scales = [1, 2, 3]
+
+    limit = fit_limit(acorr)
+
+    time = time[:limit]
+    acorr = acorr[:limit]
+
+    R_square = []
+    popt_all = []
+
+    for i, scale in enumerate(scales):
+        scale_times(bounds[0], scale)
+        scale_times(bounds[1], scale)
+        try:
+            popt = fit_auto_correlation(time, acorr, bounds)
+
+            R_square.append(np.sum((np.array(acorr) -
+                                    np.array(multi_exp(time, *popt))) ** 2))
+            popt_all.append(popt)
+        except RuntimeError:
+            print("Fit error n={}, scale={}".format(len(bounds[0])//2, scale))
+
+        scale_times(bounds[0], 1.0/scale)
+        scale_times(bounds[1], 1.0/scale)
+
+    min_ind_r_square = np.argmin(R_square)
+
+    return limit, popt_all[min_ind_r_square]
 
 
 def fit_mean_square_displacement(time: List[float], msd: List[float]) -> List[float]:
@@ -141,9 +179,9 @@ def get_fit_auto_correlation(ref_chain: Chain,
         for file in csv_files:
 
             df = pd.read_csv(file)
-            limit, popt = fit_auto_correlation(df.time_ns,
-                                               df.acorr,
-                                               bounds=bounds)
+            limit, popt = decorated_fit_auto_correlation(df.time_ns,
+                                                         df.acorr,
+                                                         bounds=bounds)
 
             assert np.isclose(np.sum(popt[::2]), 1.0), "Sum of exponential amplitudes != 1 (sum Ai = {:.3f})".format(
                 np.sum(popt[::2]))
