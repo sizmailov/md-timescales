@@ -75,42 +75,40 @@ def fit_auto_correlation(time: List[float],
     :return: Fit curve parameters
     """
 
-    limit = fit_limit(acorr)
     p0 = np.mean(bounds, axis=0)
     popt, pcov = curve_fit(multi_exp,
-                           time[:limit],
-                           acorr[:limit],
+                           time,
+                           acorr,
                            p0=p0,
                            bounds=bounds)
-    return limit, popt
+    return popt
 
 def decorated_fit_auto_correlation(time, acorr: List[float],
                          bounds: List[List[List[Union[float, int]]]]) \
         -> Tuple[int, Union[np.ndarray, Iterable, int, float]]:
 
+    limit = fit_limit(acorr)
+    time_limit = time[:limit]
+    acorr_limit = time[:limit]
     R_square = [0, 0 , 0]
-    limit_all = [0, 0 ,0]
     popt_all = [0, 0, 0]
     for scaling_ind in range(1,4):
         with_constant = len(bounds[0]) % 2 == 1
         bounds[0][1::2] = np.array(bounds[0][1::2]) * scaling_ind
         bounds[1][1::2] = np.array(bounds[1][1::2]) * scaling_ind
-        limit, popt = fit_auto_correlation(time, acorr, bounds)
+        popt = fit_auto_correlation(time, acorr, bounds)
         if with_constant:
             C = popt[-1]
             popt = popt[:-1]
         else:
             C=0
-        time_limit = time[:limit]
         amplitudes = popt[::2]
         taus = popt[1::2]
-        R_square[scaling_ind - 1] = np.sum((np.array(acorr[:limit]) - 
+        R_square[scaling_ind - 1] = np.sum((np.array(acorr_limit) - 
                                     np.array(__multi_exp_f(time_limit, amplitudes, taus, C))) ** 2)
-        limit_all[scaling_ind - 1] = limit
         popt_all[scaling_ind - 1] = popt
-    # print(R_square)
     min_ind_r_square = np.argmin(R_square)
-    return limit_all[min_ind_r_square], popt_all[min_ind_r_square]
+    return limit, popt_all[min_ind_r_square]
 
         
 
