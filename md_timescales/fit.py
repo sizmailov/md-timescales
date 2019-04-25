@@ -9,8 +9,11 @@ from scipy.optimize import curve_fit
 
 def fit_limit(data: List[Union[float, int]], window_size=50, pos_diff_ratio=0.5) -> int:
     """
-    Returns number of points at the beginning of `data` for which in every `window_size` range there are no more than `pos_diff_ratio` positive
+    Returns minimum of
+    1) number of points at the beginning of `data` for which in every
+    `window_size` range there are no more than `pos_diff_ratio` positive
     derivatives
+    2) first data point which cross zero
 
     :param data: array of function values
     :param window_size: number of points in window
@@ -27,6 +30,7 @@ def fit_limit(data: List[Union[float, int]], window_size=50, pos_diff_ratio=0.5)
     pos_diff = (diff > 0).astype(int)
     pos_diff_avg = moving_average(pos_diff, window_size)
     index = np.argmax(pos_diff_avg >= pos_diff_ratio) + window_size // 2
+    index = min(index, np.array(data < 0).argmax() )
     return index
 
 
@@ -117,7 +121,6 @@ def decorated_fit_auto_correlation(time: List[float],
                                    pos_diff_ratio=0.5,
                                    ) \
         -> Tuple[int, Union[np.ndarray, Iterable, int, float]]:
-
     def scale_times(args, scale):
         args[1::2] = np.array(args[1::2]) * scale
 
@@ -144,10 +147,10 @@ def decorated_fit_auto_correlation(time: List[float],
                                     np.array(multi_exp(time, *popt))) ** 2))
             popt_all.append(popt)
         except RuntimeError:
-            print("Fit error n={}, scale={}".format(len(bounds[0])//2, scale))
+            print("Fit error n={}, scale={}".format(len(bounds[0]) // 2, scale))
 
-        scale_times(bounds[0], 1.0/scale)
-        scale_times(bounds[1], 1.0/scale)
+        scale_times(bounds[0], 1.0 / scale)
+        scale_times(bounds[1], 1.0 / scale)
 
     min_ind_r_square = np.argmin(R_square)
 
