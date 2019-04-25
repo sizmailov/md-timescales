@@ -7,10 +7,17 @@ import glob
 from scipy.optimize import curve_fit
 
 
-def fit_limit(data: List[Union[float, int]]) -> int:
+def fit_limit(data: List[Union[float, int]], window_size=50, pos_diff_ratio=0.5) -> int:
     """
+    Returns minimum of
+    1) number of points at the beginning of `data` for which in every
+    `window_size` range there are no more than `pos_diff_ratio` positive
+    derivatives
+    2) first data point which cross zero
 
     :param data: array of function values
+    :param window_size: number of points in window
+    :param pos_diff_ratio: allowed ratio of positive diff in window
     :return: index separates region with small
              amount of negative derivatives
     """
@@ -21,9 +28,9 @@ def fit_limit(data: List[Union[float, int]]) -> int:
 
     diff = np.diff(data)
     pos_diff = (diff > 0).astype(int)
-    window_size = 50
     pos_diff_avg = moving_average(pos_diff, window_size)
-    index = np.argmax(pos_diff_avg > 0.5) + window_size // 2
+    index = np.argmax(pos_diff_avg >= pos_diff_ratio) + window_size // 2
+    index = min(index, np.array(data < 0).argmax() )
     return index
 
 
@@ -109,15 +116,20 @@ def fit_auto_correlation(time: List[float],
 
 def decorated_fit_auto_correlation(time: List[float],
                                    acorr: List[float],
-                                   bounds: List[List[List[Union[float, int]]]]) \
+                                   bounds: List[List[Union[float, int]]],
+                                   window_size=50,
+                                   pos_diff_ratio=0.5,
+                                   ) \
         -> Tuple[int, Union[np.ndarray, Iterable, int, float]]:
-
     def scale_times(args, scale):
         args[1::2] = np.array(args[1::2]) * scale
 
     scales = [1, 2, 3]
 
-    limit = fit_limit(acorr)
+    limit = fit_limit(acorr,
+                      window_size=window_size,
+                      pos_diff_ratio=pos_diff_ratio
+                      )
 
     time = time[:limit]
     acorr = acorr[:limit]
@@ -135,10 +147,10 @@ def decorated_fit_auto_correlation(time: List[float],
                                     np.array(multi_exp(time, *popt))) ** 2))
             popt_all.append(popt)
         except RuntimeError:
-            print("Fit error n={}, scale={}".format(len(bounds[0])//2, scale))
+            print("Fit error n={}, scale={}".format(len(bounds[0]) // 2, scale))
 
-        scale_times(bounds[0], 1.0/scale)
-        scale_times(bounds[1], 1.0/scale)
+        scale_times(bounds[0], 1.0 / scale)
+        scale_times(bounds[1], 1.0 / scale)
 
     min_ind_r_square = np.argmin(R_square)
 
@@ -160,7 +172,9 @@ def get_fit_auto_correlation(ref_chain: Chain,
                              csv_files: List[str],
                              output_directory: str,
                              curve_bounds: List[List[List[Union[float, int]]]],
-                             tumbling: bool = False
+                             tumbling: bool = False,
+                             window_size=50,
+                             pos_diff_ratio=0.5
                              ) -> None:
     """
 
@@ -171,6 +185,8 @@ def get_fit_auto_correlation(ref_chain: Chain,
     :param curve_bounds: restriction of function parameters
     :param ca_alignment: flag of aligment frames by Ca atoms
     :param tumbling: flag of tumbling calculation
+    :param window_size: window size to detect fit limit
+    :param pos_diff_ratio: positive diff ratio to detect fit limit
     """
     for bounds in curve_bounds:
         with_constant = len(bounds[0]) % 2 == 1
@@ -181,7 +197,10 @@ def get_fit_auto_correlation(ref_chain: Chain,
             df = pd.read_csv(file)
             limit, popt = decorated_fit_auto_correlation(df.time_ns,
                                                          df.acorr,
-                                                         bounds=bounds)
+                                                         bounds=bounds,
+                                                         window_size=window_size,
+                                                         pos_diff_ratio=pos_diff_ratio
+                                                         )
 
             assert np.isclose(np.sum(popt[::2]), 1.0), "Sum of exponential amplitudes != 1 (sum Ai = {:.3f})".format(
                 np.sum(popt[::2]))
@@ -228,7 +247,9 @@ def save_fit_auto_correlation(path_to_ref: str,
                               output_directory: str,
                               curve_bounds: List[List[List[Union[float, int]]]],
                               ca_alignment: bool = False,
-                              tumbling: bool = False
+                              tumbling: bool = False,
+                              window_size=50,
+                              pos_diff_ratio=0.5
                               ) -> None:
     """
 
@@ -237,19 +258,31 @@ def save_fit_auto_correlation(path_to_ref: str,
     :param output_directory: output directory for 
            a particular fit function (e.g. tau-2-exp.csv)
     :param curve_bounds: restriction of function parameters
-    :param ca_alignment: flag of aligment frames by Ca atoms
+    :param ca_alignment: flag of alignment frames by Ca atoms
     :param tumbling: flag of tumbling calculation
+    :param window_size: window size to detect fit limit
+    :param pos_diff_ratio: positive diff ratio to detect fit limit
     """
     traj, ref = traj_from_dir(path_to_ref, first=1, last=1)
     ref_chain = ref.asChains[0]
     csv_files = sorted(glob.glob(os.path.join(path_to_csv_acorr, "*.csv")))
-    get_fit_auto_correlation(ref_chain, csv_files, output_directory,
-                             curve_bounds, tumbling)
+    get_fit_auto_correlation(ref_chain,
+                             csv_files,
+                             output_directory,
+                             curve_bounds,
+                             tumbling,
+                             window_size=window_size,
+                             pos_diff_ratio=pos_diff_ratio)
 
     if ca_alignment:
         path_to_csv_acorr = os.path.join(path_to_csv_acorr, "ca_alignment")
         output_directory = os.path.join(output_directory, "ca_alignment")
         os.makedirs(output_directory, exist_ok=True)
         csv_files = sorted(glob.glob(os.path.join(path_to_csv_acorr, "*.csv")))
-        get_fit_auto_correlation(ref_chain, csv_files, output_directory,
-                                 curve_bounds, tumbling)
+        get_fit_auto_correlation(ref_chain,
+                                 csv_files,
+                                 output_directory,
+                                 curve_bounds,
+                                 tumbling,
+                                 window_size=window_size,
+                                 pos_diff_ratio=pos_diff_ratio)

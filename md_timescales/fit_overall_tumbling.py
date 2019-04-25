@@ -16,5 +16,7 @@ if __name__ == '__main__':
                               args.path_to_acorrs,
                               args.output_directory,
                               curve_bounds=bounds,
-                              tumbling=True
+                              tumbling=True,
+                              window_size=50,
+                              pos_diff_ratio=0.5,
                               )
