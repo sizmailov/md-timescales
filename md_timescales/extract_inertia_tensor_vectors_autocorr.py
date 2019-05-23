@@ -14,7 +14,7 @@ def extract_inertia_tensor_vectors_autocorr(path_to_trajectory: str, output_dire
     ref_ca = ref.asAtoms.filter(aName == "CA")
     frame_ca = None
 
-    nodes = pd.read_csv("/home/sergei/GB1/nodes/225.txt.csv", names=["x","y","z","w"])
+    nodes = pd.read_csv("/home/sergei/GB1/nodes/64.txt.csv", names=["x","y","z","w"])
     xyz = nodes[["x","y","z"]].values
     weights = nodes["w"]
 
