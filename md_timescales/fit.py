@@ -30,7 +30,10 @@ def fit_limit(data: List[Union[float, int]], window_size=50, pos_diff_ratio=0.5)
     pos_diff = (diff > 0).astype(int)
     pos_diff_avg = moving_average(pos_diff, window_size)
     index = np.argmax(pos_diff_avg >= pos_diff_ratio) + window_size // 2
-    index = min(index, np.array(data < 0).argmax() )
+    first_negative = np.array(data < 0).argmax()
+    if data[first_negative] >= 0:
+        first_negative = len(data)
+    index = min(index, first_negative)
     return index
 
 
